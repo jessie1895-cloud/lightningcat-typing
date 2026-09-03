@@ -392,8 +392,9 @@
   .stage-btn small{display:block; font-family:'Gowun Dodum',sans-serif; font-size:clamp(12px,1.2vw,15px); font-weight:normal; margin-top:6px; opacity:.9;}
   .stage-1{background:linear-gradient(180deg,#5fd08a,#2fae66);}
   .stage-2{background:linear-gradient(180deg,#5fb3f2,#2f8ad1);}
-  .stage-3{background:linear-gradient(180deg,#ffb86b,#f08c2e);}
-  .stage-4{background:linear-gradient(180deg,#ff8a8a,#e14f4f);}
+  .stage-3{background:linear-gradient(180deg,#b18aff,#7c4dff);}
+  .stage-4{background:linear-gradient(180deg,#ffb86b,#f08c2e);}
+  .stage-5{background:linear-gradient(180deg,#ff8a8a,#e14f4f);}
 
   .jari-wrap{
     flex:1;
@@ -539,45 +540,54 @@
   }
   .jangmun-title-label{font-weight:bold; color:var(--accent-dark); flex:1; text-align:center;}
   .jangmun-stats{display:flex; gap:14px; font-size:clamp(13px,1.5vw,18px); white-space:nowrap;}
-  .jangmun-center{
+  .jangmun-lines{
     flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    background:var(--panel);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:clamp(10px,1.6vh,18px) clamp(12px,2vw,24px);
+  }
+  .jm-row{
+    padding:clamp(8px,1.2vh,14px) clamp(10px,1.4vw,16px);
+    font-size:clamp(17px,2.2vw,26px);
+    font-family:'Gowun Dodum',sans-serif;
+    border-radius:12px;
+    margin-bottom:2px;
+    color:#9fb0cc;
+    word-break:keep-all;
+    transition:opacity .2s, font-size .2s;
+  }
+  .jm-row.done{opacity:.3; font-size:clamp(13px,1.4vw,16px);}
+  .jm-row.upcoming{opacity:.6; color:#7d8bab;}
+  .jm-row.current{
+    background:linear-gradient(180deg,#ffe8a3,#ffd257);
+    color:#3a2c00;
+    font-weight:bold;
+  }
+  .ch.untyped{color:inherit;}
+  .ch.correct{color:#1f7a3d;}
+  .ch.wrong{color:#fff; background:var(--bolt); border-radius:3px;}
+  .ch.current{background:rgba(255,255,255,.85); border-radius:3px; outline:2px solid var(--accent-dark);}
+  .jm-input-row{
     display:flex;
     align-items:center;
-    justify-content:center;
-    min-height:0;
-    padding:10px;
+    gap:10px;
+    padding:clamp(6px,1vh,10px) clamp(10px,1.4vw,16px) clamp(12px,1.6vh,18px);
+    border-bottom:2px solid #e3edfb;
+    margin-bottom:8px;
   }
-  .jangmun-line-card{
-    width:100%;
-    max-width:900px;
-    background:var(--panel);
-    border-radius:22px;
-    box-shadow:var(--shadow);
-    padding:clamp(18px,3vh,34px) clamp(18px,2.6vw,32px);
-  }
-  .jangmun-passage-box{
-    font-size:clamp(22px,3.2vw,36px);
-    line-height:1.7;
-    white-space:pre-wrap;
-    word-break:keep-all;
-    font-family:'Gowun Dodum',sans-serif;
-    text-align:center;
-  }
-  .ch.untyped{color:#b7c3dd;}
-  .ch.correct{color:#2fae66;}
-  .ch.wrong{color:#fff; background:var(--bolt); border-radius:3px;}
-  .ch.current{background:#cfe3ff; border-radius:3px; outline:2px solid var(--accent);}
+  .jm-pencil{font-size:clamp(15px,1.8vw,20px); flex:0 0 auto;}
   .jangmun-input{
-    display:block;
-    width:100%;
-    margin-top:clamp(10px,1.8vh,18px);
-    font-size:clamp(20px,2.8vw,32px);
-    padding:clamp(10px,1.6vh,16px) 16px;
-    border-radius:16px;
-    border:3px solid var(--accent);
+    flex:1;
+    min-width:0;
+    border:none;
     outline:none;
+    background:transparent;
+    font-size:clamp(18px,2.4vw,28px);
     font-family:'Gowun Dodum',sans-serif;
-    text-align:center;
+    color:var(--ink);
   }
 </style>
 </head>
@@ -608,10 +618,11 @@
             화면에 나오는 글자와 같은 자리의 키를 찾아 눌러보세요.
           </p>
           <div class="stage-grid">
-            <button class="stage-btn stage-1" data-stage="home">1️⃣ 기본자리<small>ASDF · JKL 홈로우</small></button>
-            <button class="stage-btn stage-2" data-stage="top">2️⃣ 윗자리<small>QWERTY 줄</small></button>
-            <button class="stage-btn stage-3" data-stage="bottom">3️⃣ 아랫자리<small>ZXCV 줄</small></button>
-            <button class="stage-btn stage-4" data-stage="all">4️⃣ 전체연습<small>모든 자리 섞기</small></button>
+            <button class="stage-btn stage-1" data-stage="home">1️⃣ 기본자리<small>ASDF · JKL</small></button>
+            <button class="stage-btn stage-2" data-stage="top">2️⃣ 윗자리<small>QWER · UIOP</small></button>
+            <button class="stage-btn stage-3" data-stage="middle">3️⃣ 가운데자리<small>TGB · YHN</small></button>
+            <button class="stage-btn stage-4" data-stage="bottom">4️⃣ 아랫자리<small>ZXCV · M</small></button>
+            <button class="stage-btn stage-5" data-stage="all">5️⃣ 전체연습<small>모든 자리 섞기</small></button>
           </div>
         </div>
       </div>
@@ -673,12 +684,7 @@
             <span id="jangmun-speed">⌨️ 0타/분</span>
           </div>
         </div>
-        <div class="jangmun-center">
-          <div class="jangmun-line-card">
-            <div class="jangmun-passage-box" id="jangmun-passage-box"></div>
-            <input id="jangmun-input" class="jangmun-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="✏️ 위 문장을 그대로 입력하세요">
-          </div>
-        </div>
+        <div class="jangmun-lines" id="jangmun-lines"></div>
       </div>
     </section>
 
@@ -1238,9 +1244,18 @@
     ]
   ];
   const ALL_KEYS = KEYBOARD_ROWS.flat();
-  const STAGE_KEYS = { home: KEYBOARD_ROWS[1], top: KEYBOARD_ROWS[0], bottom: KEYBOARD_ROWS[2], all: ALL_KEYS };
-  const STAGE_LABEL = { home:'기본자리', top:'윗자리', bottom:'아랫자리', all:'전체연습' };
-  const STAGE_ORDER = ['home','top','bottom','all'];
+  const KEY_BY_CODE = {};
+  ALL_KEYS.forEach(k => { KEY_BY_CODE[k.code] = k; });
+  function keysByCode(codes){ return codes.map(c => KEY_BY_CODE['Key'+c]); }
+  const STAGE_KEYS = {
+    home:   keysByCode(['A','S','D','F','J','K','L']),
+    top:    keysByCode(['Q','W','E','R','U','I','O','P']),
+    middle: keysByCode(['T','G','B','Y','H','N']),
+    bottom: keysByCode(['Z','X','C','V','M']),
+    all: ALL_KEYS
+  };
+  const STAGE_LABEL = { home:'기본자리', top:'윗자리', middle:'가운데자리', bottom:'아랫자리', all:'전체연습' };
+  const STAGE_ORDER = ['home','top','middle','bottom','all'];
   const FINGER_LABELS = {
     'l-pinky': '🖐️ 왼손 새끼손가락',
     'l-ring': '🖐️ 왼손 약지',
@@ -1413,6 +1428,15 @@
 
   let jangmunState = { idx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalCorrect:0 };
 
+  const jangmunInput = document.createElement('input');
+  jangmunInput.type = 'text';
+  jangmunInput.id = 'jangmun-input';
+  jangmunInput.className = 'jangmun-input';
+  jangmunInput.autocomplete = 'off';
+  jangmunInput.autocapitalize = 'off';
+  jangmunInput.spellcheck = false;
+  jangmunInput.placeholder = '✏️ 입력하세요';
+
   function splitIntoLines(text){
     return text.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
   }
@@ -1421,9 +1445,54 @@
     return jangmunState.lines[jangmunState.lineIdx] || '';
   }
 
-  function renderJangmunLine(){
-    const inputEl = document.getElementById('jangmun-input');
-    const typed = inputEl.value;
+  function buildJangmunLines(){
+    const wrap = document.getElementById('jangmun-lines');
+    wrap.innerHTML = '';
+    jangmunState.lines.forEach((line, i) => {
+      const row = document.createElement('div');
+      row.className = 'jm-row';
+      row.dataset.idx = i;
+      const ref = document.createElement('div');
+      ref.className = 'jm-ref';
+      ref.textContent = line;
+      row.appendChild(ref);
+      wrap.appendChild(row);
+    });
+    positionJangmunInput();
+  }
+
+  function positionJangmunInput(){
+    const wrap = document.getElementById('jangmun-lines');
+    const rows = wrap.querySelectorAll('.jm-row');
+    rows.forEach((r,i) => {
+      r.classList.toggle('done', i < jangmunState.lineIdx);
+      r.classList.toggle('current', i === jangmunState.lineIdx);
+      r.classList.toggle('upcoming', i > jangmunState.lineIdx);
+    });
+    const curRow = wrap.querySelector('.jm-row.current');
+    if(!curRow) return;
+    let inputRow = document.getElementById('jm-input-row');
+    if(!inputRow){
+      inputRow = document.createElement('div');
+      inputRow.id = 'jm-input-row';
+      inputRow.className = 'jm-input-row';
+      const pencil = document.createElement('span');
+      pencil.className = 'jm-pencil';
+      pencil.textContent = '✏️';
+      inputRow.appendChild(pencil);
+      inputRow.appendChild(jangmunInput);
+    }
+    curRow.insertAdjacentElement('afterend', inputRow);
+    renderCurrentJangmunRef();
+    curRow.scrollIntoView({block:'center', behavior:'smooth'});
+  }
+
+  function renderCurrentJangmunRef(){
+    const wrap = document.getElementById('jangmun-lines');
+    const curRow = wrap.querySelector('.jm-row.current');
+    if(!curRow) return;
+    const ref = curRow.querySelector('.jm-ref');
+    const typed = jangmunInput.value;
     const target = currentJangmunLine();
     let html = '';
     for(let i=0;i<target.length;i++){
@@ -1433,7 +1502,7 @@
       else if(i === typed.length){ cls = 'current'; }
       html += '<span class="ch '+cls+'">' + escapeHtml(ch) + '</span>';
     }
-    document.getElementById('jangmun-passage-box').innerHTML = html;
+    ref.innerHTML = html;
     document.getElementById('jangmun-lineinfo').textContent = (jangmunState.lineIdx+1) + ' / ' + jangmunState.lines.length + ' 문장';
   }
 
@@ -1444,7 +1513,7 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('jangmun-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const minutes = elapsedMs/60000;
-    const curTyped = document.getElementById('jangmun-input').value.length;
+    const curTyped = jangmunInput.value.length;
     const cpm = minutes > 0 ? Math.round((jangmunState.totalChars + curTyped) / minutes) : 0;
     document.getElementById('jangmun-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
@@ -1460,20 +1529,19 @@
     if(jangmunState.timerId) clearInterval(jangmunState.timerId);
     const p = PASSAGES[idx];
     document.getElementById('jangmun-title').textContent = p.title;
-    const inputEl = document.getElementById('jangmun-input');
-    inputEl.value = '';
-    inputEl.disabled = false;
+    jangmunInput.value = '';
+    jangmunInput.disabled = false;
     document.getElementById('jangmun-timer').textContent = '⏱️ 0:00';
     document.getElementById('jangmun-speed').textContent = '⌨️ 0타/분';
-    renderJangmunLine();
+    buildJangmunLines();
     showScreen('jangmun-practice-screen');
-    inputEl.focus();
+    jangmunInput.focus();
   }
 
   function finishJangmun(){
     jangmunState.finished = true;
     clearInterval(jangmunState.timerId);
-    document.getElementById('jangmun-input').disabled = true;
+    jangmunInput.disabled = true;
     const accuracy = jangmunState.totalChars > 0 ? Math.round(jangmunState.totalCorrect/jangmunState.totalChars*100) : 100;
     const elapsedSec = Math.max(1, (Date.now() - jangmunState.startTime)/1000);
     const cpm = Math.round(jangmunState.totalChars / (elapsedSec/60));
@@ -1492,16 +1560,15 @@
     if(jangmunState.timerId) clearInterval(jangmunState.timerId);
   }
 
-  document.getElementById('jangmun-input').addEventListener('input', () => {
+  jangmunInput.addEventListener('input', () => {
     if(jangmunState.finished) return;
     if(!jangmunState.startTime){
       jangmunState.startTime = Date.now();
       jangmunState.timerId = setInterval(tickJangmunStats, 250);
     }
-    const inputEl = document.getElementById('jangmun-input');
-    const typed = inputEl.value;
+    const typed = jangmunInput.value;
     const target = currentJangmunLine();
-    renderJangmunLine();
+    renderCurrentJangmunRef();
 
     if(typed.length >= target.length){
       let correctInLine = 0;
@@ -1509,11 +1576,12 @@
       jangmunState.totalChars += target.length;
       jangmunState.totalCorrect += correctInLine;
       jangmunState.lineIdx++;
-      inputEl.value = '';
+      jangmunInput.value = '';
       if(jangmunState.lineIdx >= jangmunState.lines.length){
         finishJangmun();
       } else {
-        renderJangmunLine();
+        positionJangmunInput();
+        jangmunInput.focus();
       }
     }
   });

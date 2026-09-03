@@ -538,35 +538,46 @@
     flex-wrap:wrap;
   }
   .jangmun-title-label{font-weight:bold; color:var(--accent-dark); flex:1; text-align:center;}
-  .jangmun-stats{display:flex; gap:12px; font-size:clamp(13px,1.5vw,18px); white-space:nowrap;}
-  .jangmun-passage-box{
+  .jangmun-stats{display:flex; gap:14px; font-size:clamp(13px,1.5vw,18px); white-space:nowrap;}
+  .jangmun-center{
     flex:1 1 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:0;
+    padding:10px;
+  }
+  .jangmun-line-card{
+    width:100%;
+    max-width:900px;
     background:var(--panel);
-    border-radius:20px;
+    border-radius:22px;
     box-shadow:var(--shadow);
-    padding:clamp(16px,2.4vh,28px);
-    overflow-y:auto;
-    font-size:clamp(18px,2.2vw,28px);
-    line-height:1.9;
+    padding:clamp(18px,3vh,34px) clamp(18px,2.6vw,32px);
+  }
+  .jangmun-passage-box{
+    font-size:clamp(22px,3.2vw,36px);
+    line-height:1.7;
     white-space:pre-wrap;
     word-break:keep-all;
     font-family:'Gowun Dodum',sans-serif;
+    text-align:center;
   }
   .ch.untyped{color:#b7c3dd;}
   .ch.correct{color:#2fae66;}
   .ch.wrong{color:#fff; background:var(--bolt); border-radius:3px;}
   .ch.current{background:#cfe3ff; border-radius:3px; outline:2px solid var(--accent);}
   .jangmun-input{
-    flex:0 0 auto;
+    display:block;
     width:100%;
-    min-height:clamp(70px,10vh,110px);
-    font-size:clamp(18px,2.2vw,26px);
-    padding:14px 16px;
+    margin-top:clamp(10px,1.8vh,18px);
+    font-size:clamp(20px,2.8vw,32px);
+    padding:clamp(10px,1.6vh,16px) 16px;
     border-radius:16px;
     border:3px solid var(--accent);
     outline:none;
-    resize:none;
     font-family:'Gowun Dodum',sans-serif;
+    text-align:center;
   }
 </style>
 </head>
@@ -657,12 +668,17 @@
           <button class="ghost-btn" id="jangmun-back-btn">← 지문 목록</button>
           <div id="jangmun-title" class="jangmun-title-label">제목</div>
           <div class="jangmun-stats">
+            <span id="jangmun-lineinfo">1 / 1 문장</span>
             <span id="jangmun-timer">⏱️ 0:00</span>
-            <span id="jangmun-progress">0%</span>
+            <span id="jangmun-speed">⌨️ 0타/분</span>
           </div>
         </div>
-        <div class="jangmun-passage-box" id="jangmun-passage-box"></div>
-        <textarea id="jangmun-input" class="jangmun-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="✏️ 여기에 위 문장을 그대로 입력하세요"></textarea>
+        <div class="jangmun-center">
+          <div class="jangmun-line-card">
+            <div class="jangmun-passage-box" id="jangmun-passage-box"></div>
+            <input id="jangmun-input" class="jangmun-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="✏️ 위 문장을 그대로 입력하세요">
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1395,12 +1411,20 @@
   }
   renderJangmunList();
 
-  let jangmunState = { idx:0, startTime:0, timerId:null, finished:false };
+  let jangmunState = { idx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalCorrect:0 };
 
-  function renderJangmunPassage(){
+  function splitIntoLines(text){
+    return text.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function currentJangmunLine(){
+    return jangmunState.lines[jangmunState.lineIdx] || '';
+  }
+
+  function renderJangmunLine(){
     const inputEl = document.getElementById('jangmun-input');
     const typed = inputEl.value;
-    const target = PASSAGES[jangmunState.idx].text;
+    const target = currentJangmunLine();
     let html = '';
     for(let i=0;i<target.length;i++){
       const ch = target[i];
@@ -1410,26 +1434,29 @@
       html += '<span class="ch '+cls+'">' + escapeHtml(ch) + '</span>';
     }
     document.getElementById('jangmun-passage-box').innerHTML = html;
-    const pct = Math.min(100, Math.round(typed.length / target.length * 100));
-    document.getElementById('jangmun-progress').textContent = pct + '%';
-    const cur = document.querySelector('#jangmun-passage-box .ch.current');
-    if(cur) cur.scrollIntoView({block:'center'});
-    if(typed.length >= target.length && !jangmunState.finished){
-      finishJangmun();
-    }
+    document.getElementById('jangmun-lineinfo').textContent = (jangmunState.lineIdx+1) + ' / ' + jangmunState.lines.length + ' 문장';
   }
 
-  function tickJangmunTimer(){
+  function tickJangmunStats(){
     if(!jangmunState.startTime) return;
-    const sec = Math.floor((Date.now() - jangmunState.startTime)/1000);
+    const elapsedMs = Date.now() - jangmunState.startTime;
+    const sec = Math.floor(elapsedMs/1000);
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('jangmun-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
+    const minutes = elapsedMs/60000;
+    const curTyped = document.getElementById('jangmun-input').value.length;
+    const cpm = minutes > 0 ? Math.round((jangmunState.totalChars + curTyped) / minutes) : 0;
+    document.getElementById('jangmun-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
   function startJangmun(idx){
     jangmunState.idx = idx;
+    jangmunState.lines = splitIntoLines(PASSAGES[idx].text);
+    jangmunState.lineIdx = 0;
     jangmunState.startTime = null;
     jangmunState.finished = false;
+    jangmunState.totalChars = 0;
+    jangmunState.totalCorrect = 0;
     if(jangmunState.timerId) clearInterval(jangmunState.timerId);
     const p = PASSAGES[idx];
     document.getElementById('jangmun-title').textContent = p.title;
@@ -1437,8 +1464,8 @@
     inputEl.value = '';
     inputEl.disabled = false;
     document.getElementById('jangmun-timer').textContent = '⏱️ 0:00';
-    document.getElementById('jangmun-progress').textContent = '0%';
-    renderJangmunPassage();
+    document.getElementById('jangmun-speed').textContent = '⌨️ 0타/분';
+    renderJangmunLine();
     showScreen('jangmun-practice-screen');
     inputEl.focus();
   }
@@ -1447,13 +1474,9 @@
     jangmunState.finished = true;
     clearInterval(jangmunState.timerId);
     document.getElementById('jangmun-input').disabled = true;
-    const target = PASSAGES[jangmunState.idx].text;
-    const typed = document.getElementById('jangmun-input').value;
-    let correct = 0;
-    for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correct++; }
-    const accuracy = Math.round(correct/target.length*100);
+    const accuracy = jangmunState.totalChars > 0 ? Math.round(jangmunState.totalCorrect/jangmunState.totalChars*100) : 100;
     const elapsedSec = Math.max(1, (Date.now() - jangmunState.startTime)/1000);
-    const cpm = Math.round(target.length / (elapsedSec/60));
+    const cpm = Math.round(jangmunState.totalChars / (elapsedSec/60));
     sfxOver();
     document.getElementById('jangmun-result-stats').textContent =
       '⏱️ 소요시간: ' + Math.round(elapsedSec) + '초   ⌨️ 분당 타수: ' + cpm + '타   🎯 정확도: ' + accuracy + '%';
@@ -1473,9 +1496,26 @@
     if(jangmunState.finished) return;
     if(!jangmunState.startTime){
       jangmunState.startTime = Date.now();
-      jangmunState.timerId = setInterval(tickJangmunTimer, 250);
+      jangmunState.timerId = setInterval(tickJangmunStats, 250);
     }
-    renderJangmunPassage();
+    const inputEl = document.getElementById('jangmun-input');
+    const typed = inputEl.value;
+    const target = currentJangmunLine();
+    renderJangmunLine();
+
+    if(typed.length >= target.length){
+      let correctInLine = 0;
+      for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
+      jangmunState.totalChars += target.length;
+      jangmunState.totalCorrect += correctInLine;
+      jangmunState.lineIdx++;
+      inputEl.value = '';
+      if(jangmunState.lineIdx >= jangmunState.lines.length){
+        finishJangmun();
+      } else {
+        renderJangmunLine();
+      }
+    }
   });
   document.getElementById('jangmun-back-btn').addEventListener('click', () => {
     stopJangmun();

@@ -369,6 +369,129 @@
 
   ::-webkit-scrollbar{width:10px;}
   ::-webkit-scrollbar-thumb{background:#cfe3ff; border-radius:10px;}
+
+  /* ---------- 자리연습 ---------- */
+  .stage-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:clamp(10px,1.4vw,18px);
+    margin-top:18px;
+  }
+  .stage-btn{
+    border:none;
+    border-radius:18px;
+    padding:clamp(18px,2.6vh,30px) 10px;
+    cursor:pointer;
+    font-size:clamp(18px,2.4vw,26px);
+    color:#fff;
+    box-shadow:0 6px 0 rgba(0,0,0,.15);
+    line-height:1.3;
+    transition:transform .08s ease;
+  }
+  .stage-btn:active{transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,.15);}
+  .stage-btn small{display:block; font-family:'Gowun Dodum',sans-serif; font-size:clamp(12px,1.2vw,15px); font-weight:normal; margin-top:6px; opacity:.9;}
+  .stage-1{background:linear-gradient(180deg,#5fd08a,#2fae66);}
+  .stage-2{background:linear-gradient(180deg,#5fb3f2,#2f8ad1);}
+  .stage-3{background:linear-gradient(180deg,#ffb86b,#f08c2e);}
+  .stage-4{background:linear-gradient(180deg,#ff8a8a,#e14f4f);}
+
+  .jari-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding:clamp(10px,1.6vw,22px);
+    gap:clamp(10px,1.4vh,18px);
+    min-height:0;
+  }
+  .jari-topbar{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel);
+    border-radius:16px;
+    padding:clamp(8px,1.2vh,14px) clamp(12px,1.8vw,20px);
+    box-shadow:var(--shadow);
+    font-size:clamp(14px,1.6vw,20px);
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .jari-finger-tag{
+    background:#fff3cd;
+    color:#8a6d00;
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:clamp(13px,1.5vw,18px);
+  }
+  .jari-target-wrap{
+    flex:0 0 auto;
+    background:var(--panel);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    text-align:center;
+    padding:clamp(14px,2.4vh,30px);
+    transition:background .15s;
+  }
+  .jari-target-wrap.correct{background:#e3fbea;}
+  .jari-target-wrap.wrong{background:#ffe8e8; animation:shake .25s;}
+  .jari-target-kr{
+    font-size:clamp(60px,10vw,140px);
+    font-family:'Jua',sans-serif;
+    color:var(--accent-dark);
+    line-height:1;
+  }
+  .jari-target-en{
+    font-size:clamp(18px,2.4vw,26px);
+    color:#7d8bab;
+    margin-top:6px;
+  }
+  .keyboard-diagram{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:clamp(6px,1vh,10px);
+    background:var(--panel);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:clamp(12px,2vh,24px);
+    min-height:140px;
+  }
+  .kb-row{display:flex; justify-content:center; gap:clamp(4px,0.8vw,8px);}
+  .kb-key{
+    position:relative;
+    width:clamp(34px,5.4vw,64px);
+    height:clamp(34px,5.4vw,64px);
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    font-family:'Jua',sans-serif;
+    font-size:clamp(14px,2vw,24px);
+    color:#fff;
+    opacity:.55;
+    transition:opacity .15s, transform .1s;
+  }
+  .kb-key .kb-en{font-size:.5em; opacity:.85; font-family:'Gowun Dodum',sans-serif;}
+  .kb-key.target{opacity:1; transform:scale(1.15); box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--bolt);}
+  .kb-key.bump::after{
+    content:"";
+    position:absolute;
+    bottom:5px;
+    width:40%;
+    height:3px;
+    background:rgba(255,255,255,.8);
+    border-radius:2px;
+  }
+  .kb-finger-l-pinky{background:#ff6b6b;}
+  .kb-finger-l-ring{background:#ffa94d;}
+  .kb-finger-l-middle{background:#ffd43b; color:#5c4a00;}
+  .kb-finger-l-index{background:#51cf66;}
+  .kb-finger-r-index{background:#38d9a9;}
+  .kb-finger-r-middle{background:#74c0fc;}
+  .kb-finger-r-ring{background:#b197fc;}
+  .kb-finger-r-pinky{background:#f783ac;}
 </style>
 </head>
 <body>
@@ -387,13 +510,56 @@
 
   <div id="content">
 
-    <!-- 자리연습 준비중 -->
-    <section class="screen tab-screen" data-tab="jari">
+    <!-- 자리연습: 단계 선택 -->
+    <section id="jari-home-screen" class="screen tab-screen" data-tab="jari">
+      <div class="scroll-pad">
+        <div class="panel center-text">
+          <span class="big-emoji" style="display:block;">🧩⌨️</span>
+          <h2>자리연습 단계를 선택하세요</h2>
+          <p style="margin-top:8px; color:#556; font-size:clamp(14px,1.6vw,18px);">
+            먼저 왼손 검지는 <b>F</b>키, 오른손 검지는 <b>J</b>키의 볼록한 돌기 위에 올려두세요! ⌨️<br>
+            화면에 나오는 글자와 같은 자리의 키를 찾아 눌러보세요.
+          </p>
+          <div class="stage-grid">
+            <button class="stage-btn stage-1" data-stage="home">1️⃣ 기본자리<small>ASDF · JKL 홈로우</small></button>
+            <button class="stage-btn stage-2" data-stage="top">2️⃣ 윗자리<small>QWERTY 줄</small></button>
+            <button class="stage-btn stage-3" data-stage="bottom">3️⃣ 아랫자리<small>ZXCV 줄</small></button>
+            <button class="stage-btn stage-4" data-stage="all">4️⃣ 전체연습<small>모든 자리 섞기</small></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 자리연습: 연습 화면 -->
+    <section id="jari-drill-screen" class="screen tab-screen" data-tab="jari">
+      <div class="jari-wrap">
+        <div class="jari-topbar">
+          <button class="ghost-btn" id="jari-back-btn">← 단계선택</button>
+          <div class="jari-progress" id="jari-progress">0 / 20</div>
+          <div class="jari-finger-tag" id="jari-finger-tag">🖐️ 왼손 검지</div>
+        </div>
+
+        <div class="jari-target-wrap">
+          <div class="jari-target-kr" id="jari-target-kr">ㅁ</div>
+          <div class="jari-target-en" id="jari-target-en">A</div>
+        </div>
+
+        <div class="keyboard-diagram" id="keyboard-diagram"></div>
+      </div>
+    </section>
+
+    <!-- 자리연습: 결과 화면 -->
+    <section id="jari-result-screen" class="screen tab-screen" data-tab="jari">
       <div class="placeholder-wrap">
         <div class="placeholder-card">
-          <span class="big-emoji">🧩</span>
-          <h2>자리연습 준비중이에요!</h2>
-          <p>손가락을 어느 자리에 놓아야 할지 알려주는 연습 메뉴를 열심히 만들고 있어요.<br>조금만 기다려주세요 🐾</p>
+          <span class="big-emoji" id="jari-result-emoji">🎉</span>
+          <h2 id="jari-result-title">잘했어요!</h2>
+          <p id="jari-result-stats" style="font-size:clamp(16px,2vw,22px); margin-top:14px;"></p>
+          <div class="secondary-row" style="margin-top:20px;">
+            <button class="primary-btn" id="jari-retry-btn">🔁 다시하기</button>
+            <button class="primary-btn" id="jari-next-btn">다음 단계 ▶</button>
+            <button class="ghost-btn" id="jari-stage-select-btn">🧩 단계 선택</button>
+          </div>
         </div>
       </div>
     </section>
@@ -553,15 +719,20 @@
     tab.addEventListener("click", () => switchTopTab(tab.dataset.tab));
   });
 
+  const MULTI_SCREEN_TABS = { game: "game-home-screen", jari: "jari-home-screen" };
+
   function switchTopTab(tabName){
     navTabs.forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
     if(tabName !== "game"){
       stopActiveGameIfAny();
     }
-    document.querySelectorAll(".tab-screen").forEach(s => s.classList.remove("active"));
-    if(tabName === "game"){
-      showScreen(lastGameScreen || "game-home-screen");
+    if(tabName !== "jari" && typeof stopJariDrill === "function"){
+      stopJariDrill();
+    }
+    if(MULTI_SCREEN_TABS.hasOwnProperty(tabName)){
+      showScreen(lastScreenForTab[tabName] || MULTI_SCREEN_TABS[tabName]);
     } else {
+      document.querySelectorAll(".tab-screen").forEach(s => s.classList.remove("active"));
       document.querySelector('.tab-screen[data-tab="'+tabName+'"]').classList.add("active");
     }
   }
@@ -606,14 +777,16 @@
     rafId: null
   };
   let wordIdSeq = 0;
-  let lastGameScreen = "game-home-screen";
+  let lastScreenForTab = { game: "game-home-screen", jari: "jari-home-screen" };
 
   /* ---------------- 화면 전환 ---------------- */
   function showScreen(id){
     document.querySelectorAll(".tab-screen").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    if(document.getElementById(id).dataset.tab === "game"){
-      lastGameScreen = id;
+    const el = document.getElementById(id);
+    el.classList.add("active");
+    const tab = el.dataset.tab;
+    if(lastScreenForTab.hasOwnProperty(tab)){
+      lastScreenForTab[tab] = id;
     }
   }
 
@@ -901,6 +1074,182 @@
 
   const heroVideo = document.getElementById("hero-video");
   heroVideo.addEventListener("error", () => { heroVideo.style.display = "none"; });
+
+  /* ================= 자리연습 (손가락 자리 익히기) ================= */
+  /* 두벌식 표준 키보드 배열: 물리적 키 코드(e.code)로 판정하므로
+     한글/영문 IME 상태와 상관없이 정확하게 동작한다. */
+  const KEYBOARD_ROWS = [
+    [
+      {code:'KeyQ', en:'Q', kr:'ㅂ', finger:'l-pinky'},
+      {code:'KeyW', en:'W', kr:'ㅈ', finger:'l-ring'},
+      {code:'KeyE', en:'E', kr:'ㄷ', finger:'l-middle'},
+      {code:'KeyR', en:'R', kr:'ㄱ', finger:'l-index'},
+      {code:'KeyT', en:'T', kr:'ㅅ', finger:'l-index'},
+      {code:'KeyY', en:'Y', kr:'ㅛ', finger:'r-index'},
+      {code:'KeyU', en:'U', kr:'ㅕ', finger:'r-index'},
+      {code:'KeyI', en:'I', kr:'ㅑ', finger:'r-middle'},
+      {code:'KeyO', en:'O', kr:'ㅐ', finger:'r-ring'},
+      {code:'KeyP', en:'P', kr:'ㅔ', finger:'r-pinky'}
+    ],
+    [
+      {code:'KeyA', en:'A', kr:'ㅁ', finger:'l-pinky'},
+      {code:'KeyS', en:'S', kr:'ㄴ', finger:'l-ring'},
+      {code:'KeyD', en:'D', kr:'ㅇ', finger:'l-middle'},
+      {code:'KeyF', en:'F', kr:'ㄹ', finger:'l-index', bump:true},
+      {code:'KeyG', en:'G', kr:'ㅎ', finger:'l-index'},
+      {code:'KeyH', en:'H', kr:'ㅗ', finger:'r-index'},
+      {code:'KeyJ', en:'J', kr:'ㅓ', finger:'r-index', bump:true},
+      {code:'KeyK', en:'K', kr:'ㅏ', finger:'r-middle'},
+      {code:'KeyL', en:'L', kr:'ㅣ', finger:'r-ring'}
+    ],
+    [
+      {code:'KeyZ', en:'Z', kr:'ㅋ', finger:'l-pinky'},
+      {code:'KeyX', en:'X', kr:'ㅌ', finger:'l-ring'},
+      {code:'KeyC', en:'C', kr:'ㅊ', finger:'l-middle'},
+      {code:'KeyV', en:'V', kr:'ㅍ', finger:'l-index'},
+      {code:'KeyB', en:'B', kr:'ㅠ', finger:'l-index'},
+      {code:'KeyN', en:'N', kr:'ㅜ', finger:'r-index'},
+      {code:'KeyM', en:'M', kr:'ㅡ', finger:'r-index'}
+    ]
+  ];
+  const ALL_KEYS = KEYBOARD_ROWS.flat();
+  const STAGE_KEYS = { home: KEYBOARD_ROWS[1], top: KEYBOARD_ROWS[0], bottom: KEYBOARD_ROWS[2], all: ALL_KEYS };
+  const STAGE_LABEL = { home:'기본자리', top:'윗자리', bottom:'아랫자리', all:'전체연습' };
+  const STAGE_ORDER = ['home','top','bottom','all'];
+  const FINGER_LABELS = {
+    'l-pinky': '🖐️ 왼손 새끼손가락',
+    'l-ring': '🖐️ 왼손 약지',
+    'l-middle': '🖐️ 왼손 중지',
+    'l-index': '🖐️ 왼손 검지',
+    'r-index': '🖐️ 오른손 검지',
+    'r-middle': '🖐️ 오른손 중지',
+    'r-ring': '🖐️ 오른손 약지',
+    'r-pinky': '🖐️ 오른손 새끼손가락'
+  };
+  const IGNORED_CODES = new Set(['ShiftLeft','ShiftRight','ControlLeft','ControlRight','AltLeft','AltRight','CapsLock','Tab','MetaLeft','MetaRight','Escape','F5','F11']);
+
+  function buildKeyboardDiagram(){
+    const wrap = document.getElementById('keyboard-diagram');
+    wrap.innerHTML = '';
+    KEYBOARD_ROWS.forEach(row => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'kb-row';
+      row.forEach(k => {
+        const keyEl = document.createElement('div');
+        keyEl.className = 'kb-key kb-finger-' + k.finger + (k.bump ? ' bump' : '');
+        keyEl.dataset.code = k.code;
+        keyEl.innerHTML = '<div>'+k.kr+'</div><div class="kb-en">'+k.en+'</div>';
+        rowEl.appendChild(keyEl);
+      });
+      wrap.appendChild(rowEl);
+    });
+  }
+  buildKeyboardDiagram();
+
+  let jari = { stage:'home', active:false, round:0, total:20, mistakes:0, current:null, startTime:0 };
+
+  function pickRandomKey(){
+    const pool = STAGE_KEYS[jari.stage];
+    let pick;
+    do { pick = pool[Math.floor(Math.random()*pool.length)]; }
+    while(pool.length > 1 && jari.current && pick.code === jari.current.code);
+    return pick;
+  }
+
+  function nextJariTarget(){
+    jari.current = pickRandomKey();
+    document.getElementById('jari-target-kr').textContent = jari.current.kr;
+    document.getElementById('jari-target-en').textContent = jari.current.en;
+    document.getElementById('jari-finger-tag').textContent = FINGER_LABELS[jari.current.finger];
+    document.querySelectorAll('.kb-key').forEach(el => {
+      el.classList.toggle('target', el.dataset.code === jari.current.code);
+    });
+    document.querySelector('.jari-target-wrap').classList.remove('correct','wrong');
+  }
+
+  function startJariStage(stage){
+    ensureAudio();
+    jari.stage = stage;
+    jari.active = true;
+    jari.round = 0;
+    jari.total = 20;
+    jari.mistakes = 0;
+    jari.current = null;
+    jari.startTime = performance.now();
+    document.getElementById('jari-progress').textContent = '0 / ' + jari.total;
+    nextJariTarget();
+    showScreen('jari-drill-screen');
+  }
+
+  function finishJariStage(){
+    jari.active = false;
+    const elapsedSec = ((performance.now() - jari.startTime)/1000).toFixed(1);
+    const accuracy = Math.round(jari.total / (jari.total + jari.mistakes) * 100);
+    document.getElementById('jari-result-stats').textContent =
+      '⏱️ 걸린 시간: ' + elapsedSec + '초   🎯 정확도: ' + accuracy + '%   ❌ 실수: ' + jari.mistakes + '번';
+    const title = document.getElementById('jari-result-title');
+    const emoji = document.getElementById('jari-result-emoji');
+    if(accuracy >= 95){ title.textContent = '번개처럼 완벽해요!'; emoji.textContent = '⚡🏆'; }
+    else if(accuracy >= 80){ title.textContent = '아주 잘했어요!'; emoji.textContent = '🎉😺'; }
+    else { title.textContent = '조금만 더 연습해봐요!'; emoji.textContent = '💪🐾'; }
+
+    const nextBtn = document.getElementById('jari-next-btn');
+    const curIdx = STAGE_ORDER.indexOf(jari.stage);
+    if(curIdx < STAGE_ORDER.length - 1){
+      const ns = STAGE_ORDER[curIdx+1];
+      nextBtn.style.display = '';
+      nextBtn.textContent = '다음 단계 (' + STAGE_LABEL[ns] + ') ▶';
+      nextBtn.dataset.nextStage = ns;
+    } else {
+      nextBtn.style.display = 'none';
+    }
+    showScreen('jari-result-screen');
+  }
+
+  function stopJariDrill(){ jari.active = false; }
+
+  document.addEventListener('keydown', (e) => {
+    if(!jari.active) return;
+    if(e.repeat) return;
+    if(!document.getElementById('jari-drill-screen').classList.contains('active')) return;
+    if(IGNORED_CODES.has(e.code)) return;
+    e.preventDefault();
+    const tw = document.querySelector('.jari-target-wrap');
+    if(e.code === jari.current.code){
+      tw.classList.remove('wrong');
+      tw.classList.add('correct');
+      sfxCatch(1);
+      jari.round++;
+      document.getElementById('jari-progress').textContent = jari.round + ' / ' + jari.total;
+      if(jari.round >= jari.total){
+        finishJariStage();
+      } else {
+        setTimeout(nextJariTarget, 180);
+      }
+    } else {
+      tw.classList.remove('correct');
+      tw.classList.add('wrong');
+      jari.mistakes++;
+      sfxMiss();
+    }
+  });
+
+  document.querySelectorAll('.stage-btn').forEach(btn => {
+    btn.addEventListener('click', () => startJariStage(btn.dataset.stage));
+  });
+  document.getElementById('jari-back-btn').addEventListener('click', () => {
+    stopJariDrill();
+    showScreen('jari-home-screen');
+  });
+  document.getElementById('jari-retry-btn').addEventListener('click', () => startJariStage(jari.stage));
+  document.getElementById('jari-next-btn').addEventListener('click', (e) => {
+    const ns = e.currentTarget.dataset.nextStage;
+    if(ns) startJariStage(ns);
+  });
+  document.getElementById('jari-stage-select-btn').addEventListener('click', () => {
+    stopJariDrill();
+    showScreen('jari-home-screen');
+  });
 
 })();
 </script>

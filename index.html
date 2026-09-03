@@ -57,7 +57,14 @@
     white-space:nowrap;
     text-shadow:0 2px 0 var(--bolt-dark);
     margin-right:clamp(4px,1vw,14px);
+    cursor:pointer;
+    background:none;
+    border:none;
+    font-family:'Jua',sans-serif;
+    transition:opacity .15s, transform .1s;
   }
+  #nav-logo:hover{opacity:.85;}
+  #nav-logo:active{transform:translateY(1px);}
   .nav-tabs{
     display:flex;
     gap:clamp(4px,0.6vw,10px);
@@ -396,6 +403,22 @@
   .stage-4{background:linear-gradient(180deg,#ffb86b,#f08c2e);}
   .stage-5{background:linear-gradient(180deg,#ff8a8a,#e14f4f);}
 
+  .jari-preview-wrap{
+    margin-top:clamp(20px,3.2vh,32px);
+  }
+  .jari-preview-label{
+    font-size:clamp(14px,1.6vw,17px);
+    font-weight:bold;
+    color:var(--accent-dark);
+    margin-bottom:10px;
+  }
+  .jari-preview-keyboard{
+    background:linear-gradient(180deg,#f3f9ff,#e8f3ff);
+    border:2px solid #e3edfb;
+    min-height:auto;
+    padding:clamp(14px,2.2vh,26px) clamp(12px,2vw,24px);
+  }
+
   .jari-wrap{
     flex:1;
     display:flex;
@@ -549,6 +572,26 @@
   .jangmun-item .card-title{font-weight:bold; line-height:1.35; font-family:'Gowun Dodum',sans-serif;}
   .jangmun-item .card-sub{font-size:clamp(11px,1.2vw,13px); color:#8296bd;}
 
+  /* 장문연습 지문 목록: 10개씩 2줄, 제목 글씨를 더 크게 */
+  #jangmun-list{
+    grid-template-columns:repeat(10, 1fr);
+    max-height:none;
+  }
+  #jangmun-list .jangmun-item{
+    min-height:132px;
+    padding:14px 8px;
+  }
+  #jangmun-list .card-title{
+    font-size:clamp(15px,1.7vw,19px);
+    line-height:1.3;
+  }
+  #jangmun-list .card-sub{
+    font-size:clamp(12px,1.3vw,14px);
+  }
+  @media (max-width:1100px){
+    #jangmun-list{grid-template-columns:repeat(5, 1fr); max-height:64vh; overflow-y:auto;}
+  }
+
   .jangmun-wrap{
     flex:1;
     display:flex;
@@ -644,12 +687,35 @@
     color:var(--accent-dark);
     margin-bottom:10px;
   }
+  .geomjeong-split{
+    display:flex;
+    gap:clamp(18px,2.8vw,34px);
+    align-items:flex-start;
+    text-align:left;
+  }
+  .geomjeong-split-left{
+    flex:1.5;
+    min-width:0;
+  }
+  .geomjeong-split-right{
+    flex:1;
+    min-width:220px;
+    max-width:320px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  @media (max-width:900px){
+    .geomjeong-split{flex-direction:column;}
+    .geomjeong-split-right{max-width:none; width:100%;}
+  }
   .geomjeong-passage-list{
-    max-height:none;
-    overflow-y:visible;
-    grid-template-columns:repeat(10, 1fr);
+    max-height:52vh;
+    overflow-y:auto;
+    grid-template-columns:repeat(auto-fill, minmax(110px,1fr));
     gap:8px;
-    margin:0 0 24px;
+    margin:0 0 8px;
   }
   .geomjeong-passage-list .jangmun-item{
     cursor:default;
@@ -664,9 +730,6 @@
   }
   .geomjeong-passage-list .card-emoji{font-size:clamp(16px,2vw,22px);}
   .geomjeong-passage-list .card-title{font-size:clamp(10px,1.05vw,12px); line-height:1.2;}
-  @media (max-width:1100px){
-    .geomjeong-passage-list{grid-template-columns:repeat(5, 1fr); max-height:40vh; overflow-y:auto;}
-  }
   .geomjeong-time-btns{
     display:flex;
     gap:12px;
@@ -758,22 +821,24 @@
   .intro-card{
     text-align:center;
     padding:clamp(24px,4vw,50px);
-    max-width:720px;
+    max-width:760px;
+    width:100%;
+  }
+  .intro-hero{
+    position:relative;
+    width:min(86vw, 640px);
+    aspect-ratio:16/9;
+    margin:0 auto clamp(14px,2.2vh,22px);
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 14px 32px rgba(20,40,90,.28);
+    background:#fff;
   }
   .intro-character{
-    width:clamp(150px,20vw,240px);
-    aspect-ratio:1/1;
+    width:100%;
+    height:100%;
     object-fit:cover;
-    background:#fff;
-    border-radius:50%;
-    padding:clamp(10px,1.6vw,18px);
-    box-shadow:0 12px 26px rgba(20,40,90,.25);
-    margin-bottom:clamp(8px,1.6vh,16px);
-    animation:intro-bob 2.6s ease-in-out infinite;
-  }
-  @keyframes intro-bob{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-12px);}
+    display:block;
   }
   .intro-greeting{
     font-size:clamp(24px,3.8vw,42px);
@@ -799,9 +864,11 @@
 
 <section id="intro-screen">
   <div class="intro-card">
-    <video class="intro-character" autoplay muted loop playsinline poster="번개냥.png">
-      <source src="번개냥메인.mp4" type="video/mp4">
-    </video>
+    <div class="intro-hero">
+      <video class="intro-character" autoplay muted loop playsinline poster="번개냥.png">
+        <source src="번개냥메인.mp4" type="video/mp4">
+      </video>
+    </div>
     <h1 class="intro-greeting">오늘도 즐거운 타자연습!</h1>
     <p class="intro-date" id="intro-date"></p>
     <button class="primary-btn intro-start-btn" id="intro-start-btn">▶ 시작하기</button>
@@ -811,13 +878,13 @@
 <div id="app">
 
   <nav id="top-nav">
-    <div id="nav-logo">⚡번개냥타자⚡</div>
+    <button id="nav-logo" type="button">⚡번개냥타자⚡</button>
     <div class="nav-tabs">
-      <button class="nav-tab" data-tab="jari">🧩 자리연습</button>
-      <button class="nav-tab" data-tab="jangmun">📖 장문연습</button>
+      <button class="nav-tab active" data-tab="jari">🧩 자리연습</button>
       <button class="nav-tab" data-tab="jjalb">🔤 짧은글연습</button>
+      <button class="nav-tab" data-tab="jangmun">📖 장문연습</button>
       <button class="nav-tab" data-tab="geomjeong">🏅 타자검정</button>
-      <button class="nav-tab active" data-tab="game">🎮 타자게임</button>
+      <button class="nav-tab" data-tab="game">🎮 타자게임</button>
     </div>
     <button id="fullscreen-btn">⛶ 전체화면</button>
   </nav>
@@ -825,7 +892,7 @@
   <div id="content">
 
     <!-- 자리연습: 단계 선택 -->
-    <section id="jari-home-screen" class="screen tab-screen" data-tab="jari">
+    <section id="jari-home-screen" class="screen tab-screen active" data-tab="jari">
       <div class="scroll-pad">
         <div class="panel center-text">
           <span class="big-emoji" style="display:block;">🧩⌨️</span>
@@ -840,6 +907,11 @@
             <button class="stage-btn stage-3" data-stage="middle">3️⃣ 가운데자리<small>TGB · YHN</small></button>
             <button class="stage-btn stage-4" data-stage="bottom">4️⃣ 아랫자리<small>ZXCV · M</small></button>
             <button class="stage-btn stage-5" data-stage="all">5️⃣ 전체연습<small>모든 자리 섞기</small></button>
+          </div>
+
+          <div class="jari-preview-wrap">
+            <div class="jari-preview-label">🐾 이렇게 생긴 키보드예요 🐾</div>
+            <div class="keyboard-diagram jari-preview-keyboard" id="jari-preview-keyboard"></div>
           </div>
         </div>
       </div>
@@ -973,23 +1045,28 @@
             <input type="text" id="geomjeong-name" placeholder="✏️ 이름을 입력하세요 (선택)" maxlength="12">
           </div>
 
-          <div class="geomjeong-time-label">📖 이런 문장으로 검정을 봐요</div>
-          <p style="margin:-4px 0 10px; color:#8296bd; font-size:clamp(12px,1.4vw,14px);">아래 지문들의 문장이 랜덤으로 섞여서 나와요</p>
-          <div class="jangmun-list geomjeong-passage-list" id="geomjeong-passage-list"></div>
-
-          <div class="geomjeong-time-label">⏱️ 검정 시간을 선택하세요</div>
-          <div class="geomjeong-time-btns">
-            <button class="geomjeong-time-btn" data-min="3">3분</button>
-            <button class="geomjeong-time-btn" data-min="5">5분</button>
-            <button class="geomjeong-time-btn" data-min="7">7분</button>
+          <div class="geomjeong-split">
+            <div class="geomjeong-split-col geomjeong-split-left">
+              <div class="geomjeong-time-label">📖 이런 문장으로 검정을 봐요</div>
+              <p style="margin:-4px 0 10px; color:#8296bd; font-size:clamp(12px,1.4vw,14px);">아래 지문들의 문장이 랜덤으로 섞여서 나와요</p>
+              <div class="jangmun-list geomjeong-passage-list" id="geomjeong-passage-list"></div>
+            </div>
+            <div class="geomjeong-split-col geomjeong-split-right">
+              <div class="geomjeong-time-label">⏱️ 검정 시간을 선택하세요</div>
+              <div class="geomjeong-time-btns">
+                <button class="geomjeong-time-btn" data-min="3">3분</button>
+                <button class="geomjeong-time-btn" data-min="5">5분</button>
+                <button class="geomjeong-time-btn" data-min="7">7분</button>
+              </div>
+              <div class="geomjeong-custom-row">
+                <span>직접 입력:</span>
+                <input type="number" id="geomjeong-custom-min" min="1" max="30" step="1" placeholder="분">
+                <span>분</span>
+                <button class="ghost-btn" id="geomjeong-custom-start-btn">시작하기</button>
+              </div>
+              <span class="geomjeong-warn" id="geomjeong-warn"></span>
+            </div>
           </div>
-          <div class="geomjeong-custom-row">
-            <span>직접 입력:</span>
-            <input type="number" id="geomjeong-custom-min" min="1" max="30" step="1" placeholder="분">
-            <span>분</span>
-            <button class="ghost-btn" id="geomjeong-custom-start-btn">시작하기</button>
-          </div>
-          <span class="geomjeong-warn" id="geomjeong-warn"></span>
         </div>
       </div>
     </section>
@@ -1032,7 +1109,7 @@
     </section>
 
     <!-- 타자게임 : 난이도 선택 -->
-    <section id="game-home-screen" class="screen tab-screen active" data-tab="game">
+    <section id="game-home-screen" class="screen tab-screen" data-tab="game">
       <div class="scroll-pad">
         <div class="hero">
           <video id="hero-video" autoplay muted loop playsinline poster="번개냥전체.png">
@@ -1171,6 +1248,13 @@
     if(startBtn && introScreen){
       startBtn.addEventListener('click', () => {
         introScreen.classList.add('hidden');
+        switchTopTab('jari');
+      });
+    }
+    const logoBtn = document.getElementById('nav-logo');
+    if(logoBtn && introScreen){
+      logoBtn.addEventListener('click', () => {
+        introScreen.classList.remove('hidden');
       });
     }
   })();
@@ -1608,8 +1692,9 @@
   };
   const IGNORED_CODES = new Set(['ShiftLeft','ShiftRight','ControlLeft','ControlRight','AltLeft','AltRight','CapsLock','Tab','MetaLeft','MetaRight','Escape','F5','F11']);
 
-  function buildKeyboardDiagram(){
-    const wrap = document.getElementById('keyboard-diagram');
+  function buildKeyboardDiagram(containerId){
+    const wrap = document.getElementById(containerId || 'keyboard-diagram');
+    if(!wrap) return;
     wrap.innerHTML = '';
     const block = document.createElement('div');
     block.className = 'kb-rows-block';
@@ -1627,7 +1712,8 @@
     });
     wrap.appendChild(block);
   }
-  buildKeyboardDiagram();
+  buildKeyboardDiagram('keyboard-diagram');
+  buildKeyboardDiagram('jari-preview-keyboard');
 
   let jari = { stage:'home', active:false, round:0, total:20, mistakes:0, current:null, startTime:0 };
 
@@ -1644,7 +1730,7 @@
     document.getElementById('jari-target-kr').textContent = jari.current.kr;
     document.getElementById('jari-target-en').textContent = jari.current.en;
     document.getElementById('jari-finger-tag').textContent = FINGER_LABELS[jari.current.finger];
-    document.querySelectorAll('.kb-key').forEach(el => {
+    document.querySelectorAll('#keyboard-diagram .kb-key').forEach(el => {
       el.classList.toggle('target', el.dataset.code === jari.current.code);
     });
     document.querySelector('.jari-target-wrap').classList.remove('correct','wrong');

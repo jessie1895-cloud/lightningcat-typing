@@ -440,13 +440,6 @@
     gap:10px;
     flex-wrap:wrap;
   }
-  .jari-finger-tag{
-    background:#fff3cd;
-    color:#8a6d00;
-    padding:6px 14px;
-    border-radius:999px;
-    font-size:clamp(13px,1.5vw,18px);
-  }
   .jari-target-wrap{
     flex:0 0 auto;
     background:var(--panel);
@@ -470,6 +463,7 @@
     margin-top:6px;
   }
   .keyboard-diagram{
+    position:relative;
     flex:1 1 auto;
     display:flex;
     flex-direction:column;
@@ -481,6 +475,48 @@
     padding:clamp(12px,2vh,24px);
     min-height:140px;
     overflow-x:auto;
+  }
+  .kb-finger-path-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    overflow:visible;
+    z-index:5;
+  }
+  .kb-finger-path-line{
+    fill:none;
+    stroke:#ff9f1c;
+    stroke-width:3;
+    stroke-linecap:round;
+    stroke-dasharray:7 7;
+    animation:kbDashFlow .5s linear infinite;
+  }
+  @keyframes kbDashFlow{ to{ stroke-dashoffset:-28; } }
+  .kb-hand-row{
+    display:flex;
+    gap:clamp(4px,0.8vw,8px);
+    margin-left:calc((clamp(34px,5.4vw,64px) + clamp(4px,0.8vw,8px)) * 0.5);
+    margin-top:clamp(8px,1.4vh,14px);
+  }
+  .kb-hand-slot{
+    width:clamp(34px,5.4vw,64px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .kb-hand-dot{
+    width:clamp(16px,2.6vw,26px);
+    height:clamp(16px,2.6vw,26px);
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 2px 5px rgba(20,40,90,.2);
+    transition:transform .18s, box-shadow .18s;
+  }
+  .kb-hand-dot.active{
+    transform:scale(1.55);
+    box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--bolt);
   }
   .kb-rows-block{
     display:flex;
@@ -592,6 +628,37 @@
     #jangmun-list{grid-template-columns:repeat(5, 1fr); max-height:64vh; overflow-y:auto;}
   }
 
+  /* 짧은글연습: 주제 목록 + 타자치는 고양이 */
+  .jjalb-split{
+    display:flex;
+    gap:clamp(18px,2.8vw,34px);
+    align-items:center;
+    margin-top:10px;
+  }
+  .jjalb-split-list{flex:1.5; min-width:0;}
+  .jjalb-split-cat{
+    flex:1;
+    min-width:180px;
+    max-width:320px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .jjalb-cat-img{width:100%; max-width:280px; height:auto;}
+  .jjalb-cat-caption{
+    margin-top:2px;
+    font-size:clamp(14px,1.6vw,18px);
+    color:var(--accent-dark);
+    font-weight:bold;
+    font-family:'Jua',sans-serif;
+  }
+  @media (max-width:900px){
+    .jjalb-split{flex-direction:column;}
+    .jjalb-split-cat{max-width:none; width:100%;}
+    .jjalb-cat-img{max-width:200px;}
+  }
+
   .jangmun-wrap{
     flex:1;
     display:flex;
@@ -653,7 +720,6 @@
     border-bottom:2px solid #e3edfb;
     margin-bottom:8px;
   }
-  .jm-pencil{font-size:clamp(15px,1.8vw,20px); flex:0 0 auto;}
   .jangmun-input{
     flex:1;
     min-width:0;
@@ -710,26 +776,51 @@
     .geomjeong-split{flex-direction:column;}
     .geomjeong-split-right{max-width:none; width:100%;}
   }
+  .geomjeong-pick-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin:-4px 0 10px;
+  }
+  .geomjeong-pick-hint{color:#8296bd; font-size:clamp(12px,1.4vw,14px);}
+  .geomjeong-pick-all-btn{font-size:clamp(11px,1.2vw,13px); padding:4px 12px;}
   .geomjeong-passage-list{
-    max-height:52vh;
-    overflow-y:auto;
-    grid-template-columns:repeat(auto-fill, minmax(110px,1fr));
+    grid-template-columns:repeat(5, 1fr);
     gap:8px;
     margin:0 0 8px;
   }
   .geomjeong-passage-list .jangmun-item{
-    cursor:default;
+    position:relative;
+    cursor:pointer;
     min-height:76px;
     padding:8px 6px;
     gap:3px;
   }
   .geomjeong-passage-list .jangmun-item:hover{
-    background:#f7fbff;
-    border-color:#e3edfb;
-    transform:none;
+    background:#eaf3ff;
+    border-color:var(--accent);
+    transform:translateY(-2px);
   }
+  .geomjeong-passage-list .jangmun-item.selected{
+    background:#fff3cd;
+    border-color:#ffb020;
+    box-shadow:0 4px 0 rgba(255,176,32,.25);
+  }
+  .geomjeong-passage-list .card-check{
+    position:absolute;
+    top:4px;
+    right:6px;
+    font-size:11px;
+    opacity:0;
+    transition:opacity .15s;
+  }
+  .geomjeong-passage-list .jangmun-item.selected .card-check{opacity:1;}
   .geomjeong-passage-list .card-emoji{font-size:clamp(16px,2vw,22px);}
   .geomjeong-passage-list .card-title{font-size:clamp(10px,1.05vw,12px); line-height:1.2;}
+  @media (max-width:900px){
+    .geomjeong-passage-list{grid-template-columns:repeat(4, 1fr); max-height:56vh; overflow-y:auto;}
+  }
   .geomjeong-time-btns{
     display:flex;
     gap:12px;
@@ -923,7 +1014,6 @@
         <div class="jari-topbar">
           <button class="ghost-btn" id="jari-back-btn">← 단계선택</button>
           <div class="jari-progress" id="jari-progress">0 / 20</div>
-          <div class="jari-finger-tag" id="jari-finger-tag">🖐️ 왼손 검지</div>
         </div>
 
         <div class="jari-target-wrap">
@@ -997,7 +1087,15 @@
       <div class="scroll-pad">
         <div class="panel">
           <h2 class="center-text">🔤 연습할 주제를 선택하세요</h2>
-          <div class="jangmun-list" id="jjalb-list"></div>
+          <div class="jjalb-split">
+            <div class="jjalb-split-list">
+              <div class="jangmun-list" id="jjalb-list"></div>
+            </div>
+            <div class="jjalb-split-cat">
+              <img src="번개냥.png" alt="타자치는 번개냥" class="jjalb-cat-img">
+              <p class="jjalb-cat-caption">오늘도 타자 연습, 화이팅! 🐾⚡</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1047,8 +1145,11 @@
 
           <div class="geomjeong-split">
             <div class="geomjeong-split-col geomjeong-split-left">
-              <div class="geomjeong-time-label">📖 이런 문장으로 검정을 봐요</div>
-              <p style="margin:-4px 0 10px; color:#8296bd; font-size:clamp(12px,1.4vw,14px);">아래 지문들의 문장이 랜덤으로 섞여서 나와요</p>
+              <div class="geomjeong-time-label">📖 검정에 사용할 지문을 선택하세요</div>
+              <div class="geomjeong-pick-toolbar">
+                <span class="geomjeong-pick-hint" id="geomjeong-pick-hint"></span>
+                <button class="ghost-btn geomjeong-pick-all-btn" id="geomjeong-select-all-btn" type="button">전체선택</button>
+              </div>
               <div class="jangmun-list geomjeong-passage-list" id="geomjeong-passage-list"></div>
             </div>
             <div class="geomjeong-split-col geomjeong-split-right">
@@ -1692,7 +1793,11 @@
   };
   const IGNORED_CODES = new Set(['ShiftLeft','ShiftRight','ControlLeft','ControlRight','AltLeft','AltRight','CapsLock','Tab','MetaLeft','MetaRight','Escape','F5','F11']);
 
-  function buildKeyboardDiagram(containerId){
+  // 홈로우(A S D F · J K L +가상 자리)에 놓인 8개 손가락을 순서대로 배치 (G,H 위치는 손가락 자리表시 없이 빈칸)
+  const HAND_SLOT_FINGERS = ['l-pinky','l-ring','l-middle','l-index', null, null, 'r-index','r-middle','r-ring','r-pinky'];
+  const HOME_KEY_BY_FINGER = { 'l-pinky':'KeyA', 'l-ring':'KeyS', 'l-middle':'KeyD', 'l-index':'KeyF', 'r-index':'KeyJ', 'r-middle':'KeyK', 'r-ring':'KeyL' };
+
+  function buildKeyboardDiagram(containerId, withHands){
     const wrap = document.getElementById(containerId || 'keyboard-diagram');
     if(!wrap) return;
     wrap.innerHTML = '';
@@ -1710,10 +1815,57 @@
       });
       block.appendChild(rowEl);
     });
+    if(withHands){
+      const handRow = document.createElement('div');
+      handRow.className = 'kb-hand-row';
+      HAND_SLOT_FINGERS.forEach(f => {
+        const slot = document.createElement('div');
+        slot.className = 'kb-hand-slot';
+        if(f){
+          const dot = document.createElement('div');
+          dot.className = 'kb-hand-dot kb-finger-' + f;
+          dot.dataset.finger = f;
+          slot.appendChild(dot);
+        }
+        handRow.appendChild(slot);
+      });
+      block.appendChild(handRow);
+    }
     wrap.appendChild(block);
+    if(withHands){
+      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('class','kb-finger-path-svg');
+      wrap.appendChild(svg);
+    }
   }
-  buildKeyboardDiagram('keyboard-diagram');
+  buildKeyboardDiagram('keyboard-diagram', true);
   buildKeyboardDiagram('jari-preview-keyboard');
+
+  function drawFingerPath(){
+    const diagram = document.getElementById('keyboard-diagram');
+    if(!diagram) return;
+    const svg = diagram.querySelector('.kb-finger-path-svg');
+    if(!svg) return;
+    svg.innerHTML = '';
+    if(!jari.active || !jari.current) return;
+    const finger = jari.current.finger;
+    if(HOME_KEY_BY_FINGER[finger] === jari.current.code) return; // 이미 그 손가락이 쉬고 있는 키라 선이 필요없음
+    const dot = diagram.querySelector('.kb-hand-dot[data-finger="'+finger+'"]');
+    const targetKey = diagram.querySelector('.kb-key.target');
+    if(!dot || !targetKey) return;
+    const rect = diagram.getBoundingClientRect();
+    const dr = dot.getBoundingClientRect();
+    const tr = targetKey.getBoundingClientRect();
+    const x1 = dr.left + dr.width/2 - rect.left;
+    const y1 = dr.top + dr.height/2 - rect.top;
+    const x2 = tr.left + tr.width/2 - rect.left;
+    const y2 = tr.top + tr.height/2 - rect.top;
+    const mx = (x1+x2)/2;
+    const my = Math.min(y1,y2) - 30;
+    svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
+    svg.innerHTML = '<path d="M '+x1+' '+y1+' Q '+mx+' '+my+' '+x2+' '+y2+'" class="kb-finger-path-line"/>';
+  }
+  window.addEventListener('resize', () => { if(jari.active) requestAnimationFrame(drawFingerPath); });
 
   let jari = { stage:'home', active:false, round:0, total:20, mistakes:0, current:null, startTime:0 };
 
@@ -1729,11 +1881,14 @@
     jari.current = pickRandomKey();
     document.getElementById('jari-target-kr').textContent = jari.current.kr;
     document.getElementById('jari-target-en').textContent = jari.current.en;
-    document.getElementById('jari-finger-tag').textContent = FINGER_LABELS[jari.current.finger];
     document.querySelectorAll('#keyboard-diagram .kb-key').forEach(el => {
       el.classList.toggle('target', el.dataset.code === jari.current.code);
     });
+    document.querySelectorAll('#keyboard-diagram .kb-hand-dot').forEach(el => {
+      el.classList.toggle('active', el.dataset.finger === jari.current.finger);
+    });
     document.querySelector('.jari-target-wrap').classList.remove('correct','wrong');
+    requestAnimationFrame(drawFingerPath);
   }
 
   function startJariStage(stage){
@@ -1909,10 +2064,6 @@
       inputRow = document.createElement('div');
       inputRow.id = 'jm-input-row';
       inputRow.className = 'jm-input-row';
-      const pencil = document.createElement('span');
-      pencil.className = 'jm-pencil';
-      pencil.textContent = '✏️';
-      inputRow.appendChild(pencil);
       inputRow.appendChild(jangmunInput);
     }
     curRow.insertAdjacentElement('afterend', inputRow);
@@ -2113,10 +2264,6 @@
       inputRow = document.createElement('div');
       inputRow.id = 'jjalb-input-row';
       inputRow.className = 'jm-input-row';
-      const pencil = document.createElement('span');
-      pencil.className = 'jm-pencil';
-      pencil.textContent = '✏️';
-      inputRow.appendChild(pencil);
       inputRow.appendChild(jjalbInput);
     }
     curRow.insertAdjacentElement('afterend', inputRow);
@@ -2241,16 +2388,57 @@
   // 장문연습 지문들을 모두 문장 단위로 쪼개서 검정용 문제 풀로 재사용
   const GEOMJEONG_SENTENCES = PASSAGES.reduce((acc, p) => acc.concat(splitIntoLines(p.text)), []);
 
+  const geomjeongSelectedIdx = new Set();
+
   function renderGeomjeongPassageList(){
     const listEl = document.getElementById('geomjeong-passage-list');
-    listEl.innerHTML = PASSAGES.map(p =>
-      '<div class="jangmun-item">' +
+    listEl.innerHTML = PASSAGES.map((p, idx) =>
+      '<div class="jangmun-item" data-idx="'+idx+'">' +
+        '<span class="card-check">✔️</span>' +
         '<span class="card-emoji">'+(p.emoji || '📖')+'</span>' +
         '<span class="card-title">'+escapeHtml(p.title)+'</span>' +
       '</div>'
     ).join('');
+    listEl.querySelectorAll('.jangmun-item').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.idx, 10);
+        if(geomjeongSelectedIdx.has(idx)) geomjeongSelectedIdx.delete(idx);
+        else geomjeongSelectedIdx.add(idx);
+        card.classList.toggle('selected', geomjeongSelectedIdx.has(idx));
+        updateGeomjeongPickHint();
+      });
+    });
   }
   renderGeomjeongPassageList();
+
+  function updateGeomjeongPickHint(){
+    const hintEl = document.getElementById('geomjeong-pick-hint');
+    const allBtn = document.getElementById('geomjeong-select-all-btn');
+    if(!hintEl) return;
+    hintEl.textContent = geomjeongSelectedIdx.size === 0
+      ? '지문을 클릭해 선택하세요 (선택 안 하면 20개 지문 전체에서 랜덤 출제돼요)'
+      : geomjeongSelectedIdx.size + '개 지문 선택됨 — 이 지문에서만 출제돼요';
+    if(allBtn) allBtn.textContent = (geomjeongSelectedIdx.size === PASSAGES.length) ? '전체해제' : '전체선택';
+  }
+  updateGeomjeongPickHint();
+
+  document.getElementById('geomjeong-select-all-btn').addEventListener('click', () => {
+    if(geomjeongSelectedIdx.size === PASSAGES.length){
+      geomjeongSelectedIdx.clear();
+    } else {
+      PASSAGES.forEach((_, idx) => geomjeongSelectedIdx.add(idx));
+    }
+    document.querySelectorAll('#geomjeong-passage-list .jangmun-item').forEach(card => {
+      card.classList.toggle('selected', geomjeongSelectedIdx.has(parseInt(card.dataset.idx,10)));
+    });
+    updateGeomjeongPickHint();
+  });
+
+  function getGeomjeongPool(){
+    if(geomjeongSelectedIdx.size === 0) return GEOMJEONG_SENTENCES;
+    const chosen = PASSAGES.filter((p, idx) => geomjeongSelectedIdx.has(idx));
+    return chosen.reduce((acc, p) => acc.concat(splitIntoLines(p.text)), []);
+  }
 
   let geomjeongState = {
     name:'', totalSec:180, lines:[], lineIdx:0,
@@ -2288,7 +2476,7 @@
   function ensureGeomjeongLines(){
     // 남은 문장이 얼마 없으면 미리 더 채워둔다 (검정 시간이 길어도 문제가 끊기지 않도록)
     if(geomjeongState.lineIdx > geomjeongState.lines.length - 10){
-      const more = shuffleArray(GEOMJEONG_SENTENCES);
+      const more = shuffleArray(getGeomjeongPool());
       appendGeomjeongRows(more, geomjeongState.lines.length);
       geomjeongState.lines = geomjeongState.lines.concat(more);
     }
@@ -2316,10 +2504,6 @@
       inputRow = document.createElement('div');
       inputRow.id = 'geomjeong-input-row';
       inputRow.className = 'jm-input-row';
-      const pencil = document.createElement('span');
-      pencil.className = 'jm-pencil';
-      pencil.textContent = '✏️';
-      inputRow.appendChild(pencil);
       inputRow.appendChild(geomjeongInput);
     }
     curRow.insertAdjacentElement('afterend', inputRow);
@@ -2392,7 +2576,7 @@
     const nameVal = (document.getElementById('geomjeong-name').value || '').trim();
     geomjeongState.name = nameVal;
     geomjeongState.totalSec = Math.round(minutes*60);
-    geomjeongState.lines = shuffleArray(GEOMJEONG_SENTENCES);
+    geomjeongState.lines = shuffleArray(getGeomjeongPool());
     geomjeongState.lineIdx = 0;
     geomjeongState.startTime = null;
     geomjeongState.endTime = null;

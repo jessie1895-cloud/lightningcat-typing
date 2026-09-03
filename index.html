@@ -624,6 +624,25 @@
     color:var(--accent-dark);
     margin-bottom:10px;
   }
+  .geomjeong-passage-list{
+    max-height:26vh;
+    grid-template-columns:repeat(auto-fill, minmax(140px,1fr));
+    gap:8px;
+    margin:0 0 24px;
+  }
+  .geomjeong-passage-list .jangmun-item{
+    cursor:default;
+    min-height:74px;
+    padding:10px 8px;
+    gap:3px;
+  }
+  .geomjeong-passage-list .jangmun-item:hover{
+    background:#f7fbff;
+    border-color:#e3edfb;
+    transform:none;
+  }
+  .geomjeong-passage-list .card-emoji{font-size:clamp(16px,2vw,20px);}
+  .geomjeong-passage-list .card-title{font-size:clamp(11px,1.2vw,13px); line-height:1.25;}
   .geomjeong-time-btns{
     display:flex;
     gap:12px;
@@ -867,6 +886,10 @@
           <div class="geomjeong-name-row">
             <input type="text" id="geomjeong-name" placeholder="✏️ 이름을 입력하세요 (선택)" maxlength="12">
           </div>
+
+          <div class="geomjeong-time-label">📖 이런 문장으로 검정을 봐요</div>
+          <p style="margin:-4px 0 10px; color:#8296bd; font-size:clamp(12px,1.4vw,14px);">아래 지문들의 문장이 랜덤으로 섞여서 나와요</p>
+          <div class="jangmun-list geomjeong-passage-list" id="geomjeong-passage-list"></div>
 
           <div class="geomjeong-time-label">⏱️ 검정 시간을 선택하세요</div>
           <div class="geomjeong-time-btns">
@@ -2019,6 +2042,17 @@
   /* ================= 타자검정 ================= */
   // 장문연습 지문들을 모두 문장 단위로 쪼개서 검정용 문제 풀로 재사용
   const GEOMJEONG_SENTENCES = PASSAGES.reduce((acc, p) => acc.concat(splitIntoLines(p.text)), []);
+
+  function renderGeomjeongPassageList(){
+    const listEl = document.getElementById('geomjeong-passage-list');
+    listEl.innerHTML = PASSAGES.map(p =>
+      '<div class="jangmun-item">' +
+        '<span class="card-emoji">📖</span>' +
+        '<span class="card-title">'+escapeHtml(p.title)+'</span>' +
+      '</div>'
+    ).join('');
+  }
+  renderGeomjeongPassageList();
 
   let geomjeongState = {
     name:'', totalSec:180, lines:[], lineIdx:0,

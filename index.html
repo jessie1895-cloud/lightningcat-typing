@@ -814,26 +814,22 @@
     .geomjeong-split{flex-direction:column;}
     .geomjeong-split-right{max-width:none; width:100%;}
   }
-  .geomjeong-pick-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    margin:-4px 0 10px;
-  }
-  .geomjeong-pick-hint{color:#8296bd; font-size:clamp(12px,1.4vw,14px);}
-  .geomjeong-pick-all-btn{font-size:clamp(11px,1.2vw,13px); padding:4px 12px;}
+  .geomjeong-pick-hint{color:#8296bd; font-size:clamp(12px,1.4vw,14px); margin:-4px 0 10px;}
   .geomjeong-passage-list{
-    grid-template-columns:repeat(5, 1fr);
-    gap:8px;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
     margin:0 0 8px;
   }
   .geomjeong-passage-list .jangmun-item{
     position:relative;
     cursor:pointer;
-    min-height:76px;
-    padding:8px 6px;
-    gap:3px;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    text-align:left;
+    min-height:60px;
+    padding:10px 14px 10px 10px;
+    gap:10px;
   }
   .geomjeong-passage-list .jangmun-item:hover{
     background:#eaf3ff;
@@ -847,17 +843,35 @@
   }
   .geomjeong-passage-list .card-check{
     position:absolute;
-    top:4px;
-    right:6px;
-    font-size:11px;
+    top:6px;
+    right:8px;
+    font-size:13px;
     opacity:0;
     transition:opacity .15s;
   }
   .geomjeong-passage-list .jangmun-item.selected .card-check{opacity:1;}
-  .geomjeong-passage-list .card-emoji{font-size:clamp(16px,2vw,22px);}
-  .geomjeong-passage-list .card-title{font-size:clamp(10px,1.05vw,12px); line-height:1.2;}
+  .geomjeong-passage-list .card-emoji{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:clamp(34px,3.4vw,44px);
+    height:clamp(34px,3.4vw,44px);
+    background:#eef4ff;
+    border-radius:12px;
+    font-size:clamp(18px,2vw,24px);
+    line-height:1;
+  }
+  .geomjeong-passage-list .jangmun-item.selected .card-emoji{background:#fff0c2;}
+  .geomjeong-passage-list .card-title{
+    flex:1;
+    min-width:0;
+    font-size:clamp(14px,1.6vw,17px);
+    line-height:1.3;
+    text-align:left;
+  }
   @media (max-width:900px){
-    .geomjeong-passage-list{grid-template-columns:repeat(4, 1fr); max-height:56vh; overflow-y:auto;}
+    .geomjeong-passage-list{grid-template-columns:repeat(2, 1fr); max-height:56vh; overflow-y:auto;}
   }
   .geomjeong-time-btns{
     display:flex;
@@ -1183,11 +1197,8 @@
 
           <div class="geomjeong-split">
             <div class="geomjeong-split-col geomjeong-split-left">
-              <div class="geomjeong-time-label">📖 검정에 사용할 지문을 선택하세요</div>
-              <div class="geomjeong-pick-toolbar">
-                <span class="geomjeong-pick-hint" id="geomjeong-pick-hint"></span>
-                <button class="ghost-btn geomjeong-pick-all-btn" id="geomjeong-select-all-btn" type="button">전체선택</button>
-              </div>
+              <div class="geomjeong-time-label">📖 검정에 사용할 지문을 하나 선택하세요</div>
+              <p class="geomjeong-pick-hint" id="geomjeong-pick-hint"></p>
               <div class="jangmun-list geomjeong-passage-list" id="geomjeong-passage-list"></div>
             </div>
             <div class="geomjeong-split-col geomjeong-split-right">
@@ -1241,7 +1252,24 @@
           <p id="geomjeong-cert-date" style="margin-top:14px; font-size:clamp(12px,1.3vw,14px); color:#9fb0cc;"></p>
           <div class="secondary-row" style="margin-top:20px;">
             <button class="primary-btn" id="geomjeong-retry-btn">🔁 다시 검정보기</button>
+            <button class="ghost-btn" id="geomjeong-rank-btn">🏆 순위보기</button>
             <button class="ghost-btn" id="geomjeong-home-btn">🏅 처음으로</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 타자검정: 순위 화면 -->
+    <section id="geomjeong-rank-screen" class="screen tab-screen" data-tab="geomjeong">
+      <div class="scroll-pad">
+        <div class="panel">
+          <h2 class="center-text">🏆 타자검정 명예의 전당 🏆</h2>
+          <table class="rank-table">
+            <thead><tr><th>순위</th><th>이름</th><th>급수</th><th>타/분</th><th>정확도</th><th>날짜</th></tr></thead>
+            <tbody id="geomjeong-rank-body"></tbody>
+          </table>
+          <div class="center-text" style="margin-top:16px;">
+            <button class="primary-btn" id="geomjeong-rank-home-btn">🏅 처음으로</button>
           </div>
         </div>
       </div>
@@ -1422,6 +1450,11 @@
     }
     if(tabName !== "geomjeong" && typeof stopGeomjeong === "function"){
       stopGeomjeong();
+    }
+    if(tabName === "geomjeong"){
+      // 다른 메뉴에 갔다가 돌아왔을 때 예전 이름이 남아있지 않도록 초기화
+      const nameInput = document.getElementById('geomjeong-name');
+      if(nameInput) nameInput.value = '';
     }
     if(MULTI_SCREEN_TABS.hasOwnProperty(tabName)){
       showScreen(lastScreenForTab[tabName] || MULTI_SCREEN_TABS[tabName]);
@@ -2287,6 +2320,26 @@
   }
   renderJjalbList();
 
+  /* 짧은글연습에 쓰인 단어들을 타자게임 단어 목록에도 추가해서 더 다양한 단어가 나오도록 함.
+     공백이 들어간 구(句)는 제외하고, 글자 길이 순으로 정렬한 뒤 쉬움/보통/어려움에 고르게 나눠 담는다. */
+  (function addJjalbWordsToGame(){
+    const seen = new Set(WORDS.easy.concat(WORDS.normal, WORDS.hard));
+    const extra = [];
+    WORD_CATEGORIES.forEach(cat => {
+      cat.words.forEach(w => {
+        if(w.indexOf(' ') === -1 && w.length >= 2 && w.length <= 6 && !seen.has(w)){
+          seen.add(w);
+          extra.push(w);
+        }
+      });
+    });
+    extra.sort((a,b) => a.length - b.length || a.localeCompare(b));
+    const third = Math.floor(extra.length / 3);
+    WORDS.easy = WORDS.easy.concat(extra.slice(0, third));
+    WORDS.normal = WORDS.normal.concat(extra.slice(third, third*2));
+    WORDS.hard = WORDS.hard.concat(extra.slice(third*2));
+  })();
+
   function shuffleArray(arr){
     const a = arr.slice();
     for(let i=a.length-1;i>0;i--){
@@ -2466,7 +2519,7 @@
   // 장문연습 지문들을 모두 문장 단위로 쪼개서 검정용 문제 풀로 재사용
   const GEOMJEONG_SENTENCES = PASSAGES.reduce((acc, p) => acc.concat(splitIntoLines(p.text)), []);
 
-  const geomjeongSelectedIdx = new Set();
+  let geomjeongSelectedIdx = null; // 지문은 한 개만 선택 가능 (null이면 전체에서 랜덤 출제)
 
   function renderGeomjeongPassageList(){
     const listEl = document.getElementById('geomjeong-passage-list');
@@ -2480,9 +2533,10 @@
     listEl.querySelectorAll('.jangmun-item').forEach(card => {
       card.addEventListener('click', () => {
         const idx = parseInt(card.dataset.idx, 10);
-        if(geomjeongSelectedIdx.has(idx)) geomjeongSelectedIdx.delete(idx);
-        else geomjeongSelectedIdx.add(idx);
-        card.classList.toggle('selected', geomjeongSelectedIdx.has(idx));
+        geomjeongSelectedIdx = (geomjeongSelectedIdx === idx) ? null : idx;
+        listEl.querySelectorAll('.jangmun-item').forEach(c => {
+          c.classList.toggle('selected', parseInt(c.dataset.idx,10) === geomjeongSelectedIdx);
+        });
         updateGeomjeongPickHint();
       });
     });
@@ -2491,31 +2545,16 @@
 
   function updateGeomjeongPickHint(){
     const hintEl = document.getElementById('geomjeong-pick-hint');
-    const allBtn = document.getElementById('geomjeong-select-all-btn');
     if(!hintEl) return;
-    hintEl.textContent = geomjeongSelectedIdx.size === 0
-      ? '지문을 클릭해 선택하세요 (선택 안 하면 20개 지문 전체에서 랜덤 출제돼요)'
-      : geomjeongSelectedIdx.size + '개 지문 선택됨 — 이 지문에서만 출제돼요';
-    if(allBtn) allBtn.textContent = (geomjeongSelectedIdx.size === PASSAGES.length) ? '전체해제' : '전체선택';
+    hintEl.textContent = (geomjeongSelectedIdx === null)
+      ? '지문을 클릭해 하나 선택하세요 (선택 안 하면 20개 지문 전체에서 랜덤 출제돼요)'
+      : '"' + PASSAGES[geomjeongSelectedIdx].title + '" 지문 선택됨 — 이 지문에서만 출제돼요';
   }
   updateGeomjeongPickHint();
 
-  document.getElementById('geomjeong-select-all-btn').addEventListener('click', () => {
-    if(geomjeongSelectedIdx.size === PASSAGES.length){
-      geomjeongSelectedIdx.clear();
-    } else {
-      PASSAGES.forEach((_, idx) => geomjeongSelectedIdx.add(idx));
-    }
-    document.querySelectorAll('#geomjeong-passage-list .jangmun-item').forEach(card => {
-      card.classList.toggle('selected', geomjeongSelectedIdx.has(parseInt(card.dataset.idx,10)));
-    });
-    updateGeomjeongPickHint();
-  });
-
   function getGeomjeongPool(){
-    if(geomjeongSelectedIdx.size === 0) return GEOMJEONG_SENTENCES;
-    const chosen = PASSAGES.filter((p, idx) => geomjeongSelectedIdx.has(idx));
-    return chosen.reduce((acc, p) => acc.concat(splitIntoLines(p.text)), []);
+    if(geomjeongSelectedIdx === null) return GEOMJEONG_SENTENCES;
+    return splitIntoLines(PASSAGES[geomjeongSelectedIdx].text);
   }
 
   let geomjeongState = {
@@ -2694,8 +2733,42 @@
     document.getElementById('geomjeong-cert-date').textContent =
       now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 검정 결과';
 
+    if(geomjeongState.totalChars > 0){
+      addGeomjeongScore(geomjeongState.name, cpm, accuracy, gradeInfo);
+    }
+
     sfxOver();
     showScreen('geomjeong-result-screen');
+  }
+
+  /* ---------------- 타자검정 순위 저장/조회 ---------------- */
+  const GEOMJEONG_RANK_KEY = 'bungaenyang_geomjeong_scores_v1';
+  function loadGeomjeongRanks(){
+    try{ return JSON.parse(localStorage.getItem(GEOMJEONG_RANK_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function saveGeomjeongRanks(list){
+    try{ localStorage.setItem(GEOMJEONG_RANK_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function addGeomjeongScore(name, cpm, accuracy, gradeInfo){
+    const list = loadGeomjeongRanks();
+    const today = new Date();
+    const dateStr = (today.getMonth()+1) + '/' + today.getDate();
+    list.push({ name: name || '익명', cpm, accuracy, grade: gradeInfo.name, emoji: gradeInfo.emoji, date: dateStr });
+    list.sort((a,b) => b.cpm - a.cpm);
+    saveGeomjeongRanks(list.slice(0, 10));
+  }
+  const GEOMJEONG_MEDALS = ['🥇','🥈','🥉'];
+  function renderGeomjeongRank(){
+    const list = loadGeomjeongRanks();
+    const body = document.getElementById('geomjeong-rank-body');
+    if(list.length === 0){
+      body.innerHTML = '<tr><td colspan="6" style="padding:20px; color:#9fb2cf;">아직 기록이 없어요. 첫 번째 도전자가 되어보세요! 🌟</td></tr>';
+      return;
+    }
+    body.innerHTML = list.map((r,i) =>
+      '<tr><td>'+(GEOMJEONG_MEDALS[i] || (i+1))+'</td><td>'+escapeHtml(r.name)+'</td><td>'+r.emoji+' '+r.grade+'</td><td>'+r.cpm+'</td><td>'+r.accuracy+'%</td><td>'+r.date+'</td></tr>'
+    ).join('');
   }
 
   function stopGeomjeong(){
@@ -2759,6 +2832,11 @@
   });
   document.getElementById('geomjeong-retry-btn').addEventListener('click', () => startGeomjeong(geomjeongState.totalSec/60));
   document.getElementById('geomjeong-home-btn').addEventListener('click', () => showScreen('geomjeong-home-screen'));
+  document.getElementById('geomjeong-rank-btn').addEventListener('click', () => {
+    renderGeomjeongRank();
+    showScreen('geomjeong-rank-screen');
+  });
+  document.getElementById('geomjeong-rank-home-btn').addEventListener('click', () => showScreen('geomjeong-home-screen'));
 
 })();
 </script>

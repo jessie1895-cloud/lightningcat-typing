@@ -286,6 +286,41 @@
   .falling-word.pop{animation:pop .25s ease forwards;}
   @keyframes pop{to{transform:scale(1.6); opacity:0;}}
   .falling-word.danger{border-color:var(--bolt); background:#fff0f0;}
+  .falling-word.hint-word{
+    background:linear-gradient(180deg,#fff3c4,#ffd257);
+    border-color:#ffb020;
+    color:#5c4400;
+    box-shadow:0 0 0 3px rgba(255,176,32,.25), 0 4px 10px rgba(255,176,32,.35);
+    animation:hintPulse 1s ease-in-out infinite;
+  }
+  .falling-word.hint-word.danger{border-color:var(--bolt);}
+  @keyframes hintPulse{
+    0%,100%{ box-shadow:0 0 0 3px rgba(255,176,32,.25), 0 4px 10px rgba(255,176,32,.35); }
+    50%{ box-shadow:0 0 0 6px rgba(255,176,32,.45), 0 4px 14px rgba(255,176,32,.55); }
+  }
+  .hint-badge{
+    position:absolute;
+    top:-12px;
+    right:-10px;
+    font-size:16px;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.2));
+  }
+  .bonus-popup{
+    position:absolute;
+    font-family:'Jua',sans-serif;
+    font-size:clamp(14px,1.8vw,20px);
+    color:#ff8c00;
+    text-shadow:0 2px 0 #fff, 0 0 6px rgba(255,255,255,.8);
+    white-space:nowrap;
+    pointer-events:none;
+    z-index:20;
+    animation:bonusFloat .9s ease-out forwards;
+  }
+  @keyframes bonusFloat{
+    0%{ opacity:0; transform:translateY(0) scale(.8); }
+    15%{ opacity:1; transform:translateY(-6px) scale(1.05); }
+    100%{ opacity:0; transform:translateY(-46px) scale(1); }
+  }
 
   #input-row{
     flex:0 0 auto;
@@ -606,7 +641,6 @@
   .jangmun-item:active{transform:translateY(0);}
   .jangmun-item .card-emoji{font-size:clamp(26px,3.4vw,40px); line-height:1;}
   .jangmun-item .card-title{font-weight:bold; line-height:1.35; font-family:'Gowun Dodum',sans-serif;}
-  .jangmun-item .card-sub{font-size:clamp(11px,1.2vw,13px); color:#8296bd;}
 
   /* 장문연습 지문 목록: 10개씩 2줄, 제목 글씨를 더 크게 */
   #jangmun-list{
@@ -621,9 +655,6 @@
     font-size:clamp(15px,1.7vw,19px);
     line-height:1.3;
   }
-  #jangmun-list .card-sub{
-    font-size:clamp(12px,1.3vw,14px);
-  }
   @media (max-width:1100px){
     #jangmun-list{grid-template-columns:repeat(5, 1fr); max-height:64vh; overflow-y:auto;}
   }
@@ -636,6 +667,13 @@
     margin-top:10px;
   }
   .jjalb-split-list{flex:1.5; min-width:0;}
+  #jjalb-list{
+    grid-template-columns:repeat(4, 1fr);
+    max-height:none;
+  }
+  @media (max-width:900px){
+    #jjalb-list{grid-template-columns:repeat(2, 1fr);}
+  }
   .jjalb-split-cat{
     flex:1;
     min-width:180px;
@@ -1532,13 +1570,33 @@
     }, delay);
   }
 
+  /* 보너스 힌트 트릭: 가끔 단어의 첫 글자나 가운데 글자를 가려서 보여주고,
+     아이들이 앞뒤 글자를 보고 유추해서 원래 단어를 끝까지 입력하면 점수를 더 많이 준다 */
+  const HINT_CHANCE = 0.22;
+  const HINT_PLACEHOLDER = '○';
+  const HINT_SCORE_MULTIPLIER = 1.8;
+
+  function maskWord(text){
+    if(text.length < 2) return text;
+    const mode = Math.random() < 0.5 ? 'first' : 'middle';
+    const idx = mode === 'first' ? 0 : Math.floor((text.length - 1) / 2);
+    return text.slice(0, idx) + HINT_PLACEHOLDER + text.slice(idx + 1);
+  }
+
   function spawnWord(){
     const cfg = DIFF_SETTINGS[state.diff];
     const list = WORDS[state.diff];
     const text = list[Math.floor(Math.random()*list.length)];
+    const isHint = text.length >= 2 && Math.random() < HINT_CHANCE;
     const el = document.createElement("div");
-    el.className = "falling-word";
-    el.textContent = text;
+    el.className = "falling-word" + (isHint ? " hint-word" : "");
+    el.textContent = isHint ? maskWord(text) : text;
+    if(isHint){
+      const badge = document.createElement('span');
+      badge.className = 'hint-badge';
+      badge.textContent = '💎';
+      el.appendChild(badge);
+    }
     field.appendChild(el);
 
     const fieldW = field.clientWidth;
@@ -1548,8 +1606,18 @@
     el.style.top = "-40px";
 
     const duration = cfg.fallMin + Math.random()*(cfg.fallMax-cfg.fallMin);
-    const word = { id: ++wordIdSeq, el, text, duration, start: performance.now(), elH: el.offsetHeight };
+    const word = { id: ++wordIdSeq, el, text, duration, start: performance.now(), elH: el.offsetHeight, hint: isHint };
     state.words.push(word);
+  }
+
+  function showBonusPopup(wordEl){
+    const popup = document.createElement('div');
+    popup.className = 'bonus-popup';
+    popup.textContent = '💎 보너스!';
+    popup.style.left = wordEl.style.left;
+    popup.style.top = wordEl.style.top;
+    field.appendChild(popup);
+    setTimeout(() => popup.remove(), 900);
   }
 
   function loop(now){
@@ -1602,7 +1670,11 @@
       state.combo++;
       const base = w.text.length * 10;
       const comboMul = 1 + Math.min(state.combo-1, 10) * 0.1;
-      const gained = Math.round(base * cfg.scoreMul * comboMul);
+      let gained = Math.round(base * cfg.scoreMul * comboMul);
+      if(w.hint){
+        gained = Math.round(gained * HINT_SCORE_MULTIPLIER);
+        showBonusPopup(w.el);
+      }
       state.score += gained;
       sfxCatch(state.combo);
       removeWord(w, true);
@@ -2005,7 +2077,6 @@
       '<button class="jangmun-item" data-idx="'+i+'">' +
         '<span class="card-emoji">📖</span>' +
         '<span class="card-title">'+escapeHtml(p.title)+'</span>' +
-        '<span class="card-sub">'+p.text.length+'자</span>' +
       '</button>'
     ).join('');
     listEl.querySelectorAll('.jangmun-item').forEach(btn => {
@@ -2191,7 +2262,15 @@
     { title:"내가 바로 게임 왕", emoji:"🎮", words:["게임","아이템","스킨","로블","레벨","퀘스트","서버","클릭","버그","모드","픽셀","포탈","랭크","스킬","보스","마크","로블록스","브롤","어몽어스","카트라이더","컴퓨터","마우스","키보드","모니터","태블릿","스피드","경험치","튜토리얼","멀티","픽셀아트","인벤토리","레벨업","그래픽","네트워크","캐릭터","게임패스","멀티플레이","스피드전","클랜전","랭킹전","보스전","퀘스트수행","스킬창","아이템창","게임오버"] },
     { title:"엉뚱하고 재미있는 상상", emoji:"🚀", words:["우주","외계","타임","머신","투명","인간","초능력","순간","이동","로봇","유령","몬스터","마법","변신","거대","블랙홀","은하수","외계인","타임머신","마법사","초능력자","비밀기지","미확인","비행체","미래도시","보물지도","신비의섬","마법주문","몬스터볼","유령의집","투명망토","순간이동","시간여행","차원이동","인공지능","우주선","마법지팡이","비밀비밀","슈퍼파워","신비의숲","꿈의나라","상상속의세계","동화속세상","무인도탐험","비밀지도"] },
     { title:"신기한 지구와 자연", emoji:"🌍", words:["바다","하늘","구름","무지개","번개","태풍","화산","지진","단풍","눈사람","빙하","정글","사막","동굴","숲속","북극곰","남극","오로라","은하수","혜성","별자리","은하계","태양계","지구촌","생태계","자연","환경","보호","분리수거","재활용","아프리카","아마존","시베리아","에베레스트","사하라사막","파도타기","화산폭발","지진운","무지개다리","단풍놀이","눈싸움","얼음썰매","정글탐험","동굴탐험","우주탐험"] },
-    { title:"신나는 학교생활", emoji:"🏫", words:["학교","친구","체육","미술","음악","쉬는시간","점심","급식","연필","공책","지우개","필통","시계","칠판","가방","운동장","도서관","강당","교실","수학","과학","사회","국어","실과","동아리","학급회의","모둠 활동","체험학습","방과후","실내화","짝꿍","교과서","색연필","싸인펜","가위","풀","알림장","숙제","시험","발표","미인대회","학예회","운동회","현장학습","반장선거"] }
+    { title:"신나는 학교생활", emoji:"🏫", words:["학교","친구","체육","미술","음악","쉬는시간","점심","급식","연필","공책","지우개","필통","시계","칠판","가방","운동장","도서관","강당","교실","수학","과학","사회","국어","실과","동아리","학급회의","모둠 활동","체험학습","방과후","실내화","짝꿍","교과서","색연필","싸인펜","가위","풀","알림장","숙제","시험","발표","미인대회","학예회","운동회","현장학습","반장선거"] },
+    { title:"마법 & 판타지 세계", emoji:"🧙", words:["마법","용사","전사","궁수","도적","물약","지팡이","성벽","왕국","공주","왕자","드래곤","룬석","골렘","봉인","마법사","연금술","성기사","비밀문","마법서","다이아","엘릭서","네크로","결계막","순간 이동","날개 신발","마법 모자","고블린","오크족","기사단","마법 주문","드래곤 길들이기","전설의 검","비밀의 열쇠","마법 학교","보물 상자","신비한 숲","마법의 약","고대의 유물","마왕 퇴치","모험가 조합","마법 진영","영웅의 노래","차원의 문","결계 해제"] },
+    { title:"신나는 스포츠 & 운동", emoji:"⚽", words:["축구","농구","야구","배구","피구","태권도","수영","육상","인라인","펜싱","골프","탁구","양궁","승마","줄밀기","손흥민","김연아","안세영","스트라이커","홈런왕","골키퍼","자유형","줄줄이","피구공","배드민턴","슬램덤크","수영장","운동화","리플레이","태권도 띠","축구 경기","농구 한판","승부차기","역전 골","골든 골","전국 체전","올림픽","월드컵","홈런 타자","서브 에이스","자유투","운동회 깃발","릴레이 경주","마라톤 완주"] },
+    { title:"직업 & 미래 꿈", emoji:"💼", words:["의사","교사","화가","가수","요리사","판사","변호사","기자","과학자","탐정","우주인","소방관","경찰","건축가","작가","프로그래머","웹툰 작가","요리 연구가","스포츠 선수","애니메이터","연구원","수의사","승무원","파티시에","일러스트","사진작가","특수경찰","천문학자","영화감독","프로게이머","게임 개발자","인공지능 전문가","콘텐츠 크리에이터","로봇 공학자","우주 과학자","환경 운동가","특수 효과 감독","자율주행 전문가","동물 훈련사","응급 구조대","디지털 아티스트","드론 조종사","과학 연구원","국제 기구원","미래 직업"] },
+    { title:"맛있는 과일 & 채소", emoji:"🍎", words:["사과","바나나","포도","딸기","수박","참외","복숭아","자두","귤","감","오렌지","망고","레몬","체리","키위","파인애플","블루베리","샤인머스캣","아보카도","토마토","당근","브로콜리","양배추","시금치","옥수수","고구마","감자","단호박","파프리카","오이","방울토마토","미니 사과","애플망고","한라봉","천혜향","청포도","레드향","머스크멜론","스트로베리","그린키위","호박고구마","자색고구마","미니 단호박","샐러리","파프리카 볶음"] },
+    { title:"세계 여러 나라 & 여행", emoji:"✈️", words:["한국","일본","중국","미국","영국","프랑스","독일","스위스","캐나다","호주","이집트","브라질","여권","비행기","여행","에펠탑","피라미드","만리장성","자유의 여신상","빅벤","타지마할","관광지","공항","캐리어","지도","배낭여행","자유여행","휴양지","기념품","나이아가라","세계 지도","지구촌 여행","나이아가라 폭포","샌프란시스코","에펠탑 야경","알프스 산맥","사하라 탐험","세계 유산","문화 체험","여권 도장","비행기 표","타임스퀘어","남극 탐험","크루즈 여행","베네치아 운하"] },
+    { title:"우주 & 과학 탐험", emoji:"🔭", words:["우주","태양","지구","달","화성","목성","토성","금성","수성","은하","별빛","혜성","유성","인공","로켓","우주선","우주복","무중력","천망경","우주인","은하수","블랙홀","탐사선","미니 위성","행성","별자리","별똥별","과학관","실험실","태양계","우주 정거장","인공위성","우주 탐사","태양계 행성","화성 탐사선","무중력 체험","천문대 관측","별자리 찾기","우주 발사장","과학 실험","혜성 충돌","은하계 여행","로켓 발사","과학 경진 대회","우주 과학자"] },
+    { title:"귀여운 탈것 & 교통", emoji:"🚗", words:["차","기차","버스","택시","배","비행기","헬기","자전거","킥보드","전동","지하철","트럭","경찰차","소방차","구급차","스쿨버스","고속열차","케이블카","모노레일","잠수함","열기구","요트","크루즈","캠핑카","포크레인","레미콘","스포츠카","전기차","드론","덤프트럭","노란 스쿨버스","친환경 전기차","자율주행차","자전거 타기","씽씽 킥보드","초고속 열차","소방차 출동","경찰차 사이렌","바다 크루즈","하늘 위 열기구","케이블카 여행","드론 날리기","포크레인 중장비","지하철 노선","캠핑카 여행"] },
+    { title:"신나는 계절 & 명절", emoji:"🍁", words:["봄","여름","가을","겨울","단풍","눈꽃","매화","벚꽃","해수욕","캠핑","설날","추석","한가위","연날리기","떡국","봄소풍","여름방학","단풍놀이","겨울방학","크리스마스","산타","눈사람","송편","세배","쥐불놀이","부럼","달맞이","제기차기","팽이치기","벚꽃 축제","물놀이 가자","단풍잎 줍기","눈싸움 하자","즐거운 설날","풍성한 추석","세뱃돈 받기","송편 만들기","연날리기 대회","팽이 챔피언","여름 피서","겨울 썰매장","크리스마스 선물","밤하늘 보름달","계절의 변화"] }
   ];
 
   function renderJjalbList(){
@@ -2200,7 +2279,6 @@
       '<button class="jangmun-item" data-idx="'+i+'">' +
         '<span class="card-emoji">'+c.emoji+'</span>' +
         '<span class="card-title">'+escapeHtml(c.title)+'</span>' +
-        '<span class="card-sub">'+c.words.length+'개 단어</span>' +
       '</button>'
     ).join('');
     listEl.querySelectorAll('.jangmun-item').forEach(btn => {

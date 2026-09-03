@@ -762,6 +762,8 @@
   }
   .intro-character{
     width:clamp(150px,20vw,240px);
+    aspect-ratio:1/1;
+    object-fit:cover;
     background:#fff;
     border-radius:50%;
     padding:clamp(10px,1.6vw,18px);
@@ -782,7 +784,8 @@
   .intro-date{
     margin-top:10px;
     font-size:clamp(15px,2vw,22px);
-    color:#5c6b8a;
+    color:var(--ink);
+    font-weight:bold;
     font-family:'Gowun Dodum',sans-serif;
   }
   .intro-start-btn{
@@ -796,7 +799,9 @@
 
 <section id="intro-screen">
   <div class="intro-card">
-    <img src="번개냥.png" alt="번개냥" class="intro-character">
+    <video class="intro-character" autoplay muted loop playsinline poster="번개냥.png">
+      <source src="번개냥메인.mp4" type="video/mp4">
+    </video>
     <h1 class="intro-greeting">오늘도 즐거운 타자연습!</h1>
     <p class="intro-date" id="intro-date"></p>
     <button class="primary-btn intro-start-btn" id="intro-start-btn">▶ 시작하기</button>

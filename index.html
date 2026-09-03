@@ -17,93 +17,173 @@
     --accent:#3aa0ff;
     --accent-dark:#1d78d1;
     --good:#3ddc84;
+    --nav-bg:#0e1b33;
     --shadow:0 10px 30px rgba(20,40,90,.25);
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  html,body{margin:0;padding:0;height:100%;width:100%;}
   body{
     font-family:'Gowun Dodum','Noto Sans KR',sans-serif;
     background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-bottom) 65%);
     color:var(--ink);
-    min-height:100vh;
+    overflow:hidden;
+  }
+  h1,h2,h3{font-family:'Jua',sans-serif; margin:0;}
+  button{font-family:'Jua',sans-serif;}
+
+  #app{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- TOP NAV ---------- */
+  #top-nav{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:clamp(6px,1vw,16px);
+    padding:0 clamp(10px,2vw,26px);
+    height:clamp(58px,8vh,92px);
+    background:linear-gradient(180deg,#132345,var(--nav-bg));
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+    position:relative;
+    z-index:20;
+  }
+  #nav-logo{
+    color:#fff;
+    font-size:clamp(16px,2.2vw,28px);
+    white-space:nowrap;
+    text-shadow:0 2px 0 var(--bolt-dark);
+    margin-right:clamp(4px,1vw,14px);
+  }
+  .nav-tabs{
+    display:flex;
+    gap:clamp(4px,0.6vw,10px);
+    flex:1;
+    overflow-x:auto;
+  }
+  .nav-tab{
+    border:none;
+    background:rgba(255,255,255,.08);
+    color:#dceeff;
+    padding:clamp(8px,1.1vw,14px) clamp(10px,1.6vw,20px);
+    border-radius:12px;
+    cursor:pointer;
+    font-size:clamp(13px,1.5vw,19px);
+    white-space:nowrap;
+    transition:background .15s, transform .1s;
+  }
+  .nav-tab:hover{background:rgba(255,255,255,.18);}
+  .nav-tab.active{background:var(--bolt); color:#fff; box-shadow:0 3px 0 var(--bolt-dark);}
+  #fullscreen-btn{
+    border:none;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    padding:clamp(8px,1vw,12px) clamp(10px,1.4vw,16px);
+    border-radius:12px;
+    cursor:pointer;
+    font-size:clamp(13px,1.4vw,18px);
+    white-space:nowrap;
+  }
+  #fullscreen-btn:hover{background:rgba(255,255,255,.22);}
+
+  /* ---------- CONTENT AREA ---------- */
+  #content{
+    flex:1 1 auto;
+    min-height:0;
+    position:relative;
+    overflow:auto;
+  }
+  .screen{display:none; height:100%; width:100%;}
+  .screen.active{display:flex; flex-direction:column;}
+
+  .scroll-pad{
+    padding:clamp(10px,2vw,28px);
+    overflow-y:auto;
+    height:100%;
+  }
+
+  /* ---------- PLACEHOLDER SCREENS ---------- */
+  .placeholder-wrap{
+    flex:1;
     display:flex;
     align-items:center;
     justify-content:center;
-    overflow-x:hidden;
+    text-align:center;
+    padding:20px;
   }
-  h1,h2,h3{font-family:'Jua',sans-serif; margin:0;}
-  #app{
-    width:100%;
-    max-width:900px;
-    margin:16px;
+  .placeholder-card{
+    background:var(--panel);
+    border-radius:28px;
+    box-shadow:var(--shadow);
+    padding:clamp(28px,5vw,60px);
+    max-width:640px;
   }
-  .screen{display:none;}
-  .screen.active{display:block;}
+  .placeholder-card .big-emoji{font-size:clamp(48px,8vw,96px); display:block; margin-bottom:14px;}
+  .placeholder-card h2{font-size:clamp(22px,3.2vw,36px); color:var(--accent-dark);}
+  .placeholder-card p{font-size:clamp(15px,1.8vw,20px); line-height:1.7; margin-top:12px; color:#556;}
 
-  /* ---------- START SCREEN ---------- */
-  #start-screen .hero{
+  /* ---------- GAME HOME (difficulty select) ---------- */
+  #game-home-screen .scroll-pad{display:flex; flex-direction:column; gap:clamp(10px,1.6vh,20px);}
+  .hero{
     position:relative;
     border-radius:24px;
     overflow:hidden;
     box-shadow:var(--shadow);
     background:#0e1b33;
+    flex:1 1 40%;
+    min-height:140px;
   }
-  #start-screen video, #start-screen .hero-fallback{
-    width:100%;
+  .hero video, .hero .hero-fallback{
+    width:100%;height:100%;
     display:block;
-    max-height:340px;
-    object-fit:cover;
-  }
-  #start-screen .hero-fallback{
-    width:100%;
-    max-height:340px;
     object-fit:cover;
   }
   .title-badge{
     position:absolute;
     top:0;left:0;right:0;
-    padding:22px 20px 60px;
-    background:linear-gradient(180deg, rgba(10,20,40,.75) 0%, rgba(10,20,40,0) 100%);
+    padding:clamp(14px,2.4vh,28px) 20px clamp(30px,6vh,70px);
+    background:linear-gradient(180deg, rgba(10,20,40,.78) 0%, rgba(10,20,40,0) 100%);
     text-align:center;
   }
   .title-badge h1{
     color:#fff;
-    font-size:clamp(28px,6vw,44px);
+    font-size:clamp(26px,5vw,52px);
     text-shadow:0 3px 0 var(--bolt-dark), 0 6px 16px rgba(0,0,0,.4);
     letter-spacing:1px;
   }
   .title-badge p{
     color:#dceeff;
     margin-top:8px;
-    font-size:15px;
+    font-size:clamp(13px,1.6vw,19px);
   }
   .panel{
     background:var(--panel);
     border-radius:20px;
     box-shadow:var(--shadow);
-    padding:24px;
-    margin-top:16px;
+    padding:clamp(16px,2.4vw,30px);
   }
+  .panel h2{font-size:clamp(18px,2.4vw,28px);}
   .diff-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:14px;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:clamp(10px,1.4vw,18px);
     margin-top:14px;
   }
   .diff-btn{
     border:none;
-    border-radius:16px;
-    padding:18px 12px;
+    border-radius:18px;
+    padding:clamp(16px,2.6vh,28px) 12px;
     cursor:pointer;
-    font-family:'Jua',sans-serif;
-    font-size:20px;
+    font-size:clamp(20px,2.8vw,30px);
     color:#fff;
     box-shadow:0 6px 0 rgba(0,0,0,.15);
     transition:transform .08s ease;
-    position:relative;
   }
   .diff-btn:active{transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,.15);}
-  .diff-btn small{display:block; font-family:'Gowun Dodum',sans-serif; font-size:13px; font-weight:normal; margin-top:6px; opacity:.9;}
+  .diff-btn small{display:block; font-family:'Gowun Dodum',sans-serif; font-size:clamp(12px,1.3vw,16px); font-weight:normal; margin-top:6px; opacity:.9;}
   .diff-easy{background:linear-gradient(180deg,#5fd08a,#2fae66);}
   .diff-normal{background:linear-gradient(180deg,#5fb3f2,#2f8ad1);}
   .diff-hard{background:linear-gradient(180deg,#ff8a5b,#e8592e);}
@@ -119,15 +199,15 @@
     background:#eef4ff;
     border:2px solid #cfe3ff;
     color:var(--accent-dark);
-    font-family:'Jua',sans-serif;
-    padding:10px 18px;
+    padding:clamp(9px,1.2vh,14px) clamp(14px,2vw,22px);
     border-radius:12px;
     cursor:pointer;
-    font-size:15px;
+    font-size:clamp(14px,1.6vw,18px);
   }
   .ghost-btn:hover{background:#dcebff;}
 
   /* ---------- GAME SCREEN ---------- */
+  #game-screen{padding:clamp(8px,1.4vw,18px); gap:clamp(8px,1.2vh,14px);}
   #game-screen .hud{
     display:flex;
     align-items:center;
@@ -135,29 +215,29 @@
     gap:10px;
     background:var(--panel);
     border-radius:16px;
-    padding:12px 16px;
+    padding:clamp(8px,1.4vh,16px) clamp(12px,1.8vw,22px);
     box-shadow:var(--shadow);
-    margin-bottom:10px;
     flex-wrap:wrap;
+    flex:0 0 auto;
   }
-  .hud-item{display:flex; align-items:center; gap:8px; font-family:'Jua',sans-serif; font-size:16px;}
+  .hud-item{display:flex; align-items:center; gap:10px; font-size:clamp(16px,2vw,26px);}
   .mascot-badge{
-    width:44px;height:44px;border-radius:50%;
+    width:clamp(38px,4.5vw,60px);height:clamp(38px,4.5vw,60px);border-radius:50%;
     background:#eaf3ff;
     display:flex;align-items:center;justify-content:center;
     overflow:hidden;
     box-shadow:0 0 0 3px #cfe3ff;
     animation:bob 1.6s ease-in-out infinite;
   }
-  .mascot-badge img{width:36px;height:36px;object-fit:contain;}
+  .mascot-badge img{width:80%;height:80%;object-fit:contain;}
   @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
-  #hearts{letter-spacing:2px; font-size:20px;}
+  #hearts{letter-spacing:2px; font-size:clamp(18px,2.6vw,32px);}
   #combo-tag{
     background:var(--bolt);
     color:#fff;
-    padding:2px 10px;
+    padding:4px 14px;
     border-radius:999px;
-    font-size:13px;
+    font-size:clamp(13px,1.5vw,18px);
     opacity:0;
     transform:scale(.6);
     transition:opacity .15s, transform .15s;
@@ -166,10 +246,11 @@
 
   #play-field{
     position:relative;
-    height:420px;
+    flex:1 1 auto;
+    min-height:200px;
     background:
       linear-gradient(180deg, #cfe9ff 0%, #eaf6ff 70%, #fff8dc 100%);
-    border-radius:18px;
+    border-radius:20px;
     box-shadow:var(--shadow);
     overflow:hidden;
     border:3px solid #fff;
@@ -178,95 +259,82 @@
     content:"";
     position:absolute;
     left:0;right:0;bottom:0;
-    height:14px;
-    background:repeating-linear-gradient(90deg,var(--bolt),var(--bolt) 16px,var(--bolt-dark) 16px,var(--bolt-dark) 32px);
+    height:16px;
+    background:repeating-linear-gradient(90deg,var(--bolt),var(--bolt) 18px,var(--bolt-dark) 18px,var(--bolt-dark) 36px);
     opacity:.85;
   }
   .falling-word{
     position:absolute;
     top:-40px;
-    padding:8px 14px;
+    padding:clamp(8px,1.1vh,14px) clamp(14px,1.6vw,22px);
     background:#fff;
     border:2px solid var(--accent);
-    border-radius:12px;
-    font-family:'Jua',sans-serif;
-    font-size:20px;
+    border-radius:14px;
+    font-size:clamp(20px,3vw,42px);
     color:var(--ink);
     box-shadow:0 4px 10px rgba(20,60,120,.18);
     white-space:nowrap;
     user-select:none;
   }
-  .falling-word .matched{color:var(--bolt); }
-  .falling-word.pop{
-    animation:pop .25s ease forwards;
-  }
-  @keyframes pop{
-    to{transform:scale(1.6); opacity:0;}
-  }
+  .falling-word.pop{animation:pop .25s ease forwards;}
+  @keyframes pop{to{transform:scale(1.6); opacity:0;}}
   .falling-word.danger{border-color:var(--bolt); background:#fff0f0;}
 
   #input-row{
-    margin-top:12px;
+    flex:0 0 auto;
     display:flex;
     gap:10px;
   }
   #typing-input{
     flex:1;
-    font-size:22px;
-    font-family:'Jua',sans-serif;
-    padding:14px 16px;
-    border-radius:14px;
+    font-size:clamp(22px,3.4vw,44px);
+    padding:clamp(12px,1.8vh,20px) 16px;
+    border-radius:16px;
     border:3px solid var(--accent);
     outline:none;
     text-align:center;
   }
   #typing-input.shake{animation:shake .25s;}
-  @keyframes shake{
-    25%{transform:translateX(-6px);}
-    75%{transform:translateX(6px);}
-  }
+  @keyframes shake{25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
   #pause-btn{
-    font-family:'Jua',sans-serif;
     border:none;
     background:#eef4ff;
     color:var(--accent-dark);
-    border-radius:14px;
-    padding:0 18px;
+    border-radius:16px;
+    padding:0 clamp(14px,2vw,24px);
     cursor:pointer;
-    font-size:15px;
+    font-size:clamp(14px,1.7vw,20px);
   }
 
-  /* ---------- OVER / RANK SCREEN ---------- */
+  /* ---------- OVER / RANK / PAUSE ---------- */
   .center-text{text-align:center;}
   #final-score{
-    font-family:'Jua',sans-serif;
-    font-size:48px;
+    font-size:clamp(40px,7vw,72px);
     color:var(--bolt);
     margin:10px 0;
   }
   #name-row{
     display:flex;
     gap:10px;
-    max-width:340px;
+    max-width:420px;
     margin:16px auto 0;
   }
   #name-input{
     flex:1;
-    padding:12px 14px;
-    border-radius:12px;
+    padding:clamp(10px,1.6vh,16px) 14px;
+    border-radius:14px;
     border:2px solid #cfe3ff;
-    font-size:16px;
+    font-size:clamp(16px,2vw,22px);
     text-align:center;
   }
   .primary-btn{
-    font-family:'Jua',sans-serif;
     background:linear-gradient(180deg,#5fb3f2,#2f8ad1);
     color:#fff;
     border:none;
-    padding:12px 20px;
-    border-radius:12px;
+    padding:clamp(10px,1.6vh,16px) clamp(16px,2.2vw,26px);
+    border-radius:14px;
     cursor:pointer;
-    font-size:16px;
+    font-size:clamp(15px,1.8vw,22px);
     box-shadow:0 5px 0 #1d6bab;
   }
   .primary-btn:active{transform:translateY(3px); box-shadow:0 2px 0 #1d6bab;}
@@ -275,157 +343,237 @@
     width:100%;
     border-collapse:collapse;
     margin-top:14px;
-    font-size:15px;
+    font-size:clamp(14px,1.7vw,20px);
   }
   table.rank-table th, table.rank-table td{
-    padding:8px 10px;
+    padding:clamp(6px,1vh,12px) 10px;
     text-align:center;
     border-bottom:1px solid #eef2f8;
   }
-  table.rank-table th{color:var(--accent-dark); font-family:'Jua',sans-serif;}
-  table.rank-table tr:first-child td{font-weight:bold; color:var(--bolt);}
+  table.rank-table th{color:var(--accent-dark);}
+  table.rank-table tr:first-child td{font-weight:bold; color:var(--bolt); font-size:1.15em;}
 
   .tabs{display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap;}
   .tab-btn{
     border:2px solid #cfe3ff;
     background:#fff;
     color:var(--accent-dark);
-    font-family:'Jua',sans-serif;
-    padding:8px 16px;
+    padding:clamp(7px,1.1vh,11px) clamp(14px,2vw,20px);
     border-radius:999px;
     cursor:pointer;
-    font-size:14px;
+    font-size:clamp(13px,1.5vw,17px);
   }
   .tab-btn.active{background:var(--accent); color:#fff; border-color:var(--accent);}
 
-  footer{
-    text-align:center;
-    color:#6d84ad;
-    font-size:12px;
-    margin:18px 0 6px;
-  }
-  @media (max-width:520px){
-    #play-field{height:360px;}
-  }
+  #how-screen .placeholder-card p{text-align:left;}
+
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-thumb{background:#cfe3ff; border-radius:10px;}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- START SCREEN -->
-  <section id="start-screen" class="screen active">
-    <div class="hero">
-      <video id="hero-video" autoplay muted loop playsinline poster="번개냥전체.png">
-        <source src="번개냥.mp4" type="video/mp4">
-      </video>
-      <div class="title-badge">
-        <h1>⚡ 번개냥타자 ⚡</h1>
-        <p>번개처럼 떨어지는 단어를 빠르게 입력해서 잡아보세요!</p>
-      </div>
+  <nav id="top-nav">
+    <div id="nav-logo">⚡번개냥타자⚡</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" data-tab="jari">🧩 자리연습</button>
+      <button class="nav-tab" data-tab="jangmun">📖 장문연습</button>
+      <button class="nav-tab" data-tab="geomjeong">🏅 타자검정</button>
+      <button class="nav-tab active" data-tab="game">🎮 타자게임</button>
     </div>
+    <button id="fullscreen-btn">⛶ 전체화면</button>
+  </nav>
 
-    <div class="panel">
-      <h2>난이도를 선택하세요</h2>
-      <div class="diff-grid">
-        <button class="diff-btn diff-easy" data-diff="easy">쉬움<small>천천히 · 짧은 단어</small></button>
-        <button class="diff-btn diff-normal" data-diff="normal">보통<small>적당한 속도</small></button>
-        <button class="diff-btn diff-hard" data-diff="hard">어려움<small>빠르고 긴 단어</small></button>
+  <div id="content">
+
+    <!-- 자리연습 준비중 -->
+    <section class="screen tab-screen" data-tab="jari">
+      <div class="placeholder-wrap">
+        <div class="placeholder-card">
+          <span class="big-emoji">🧩</span>
+          <h2>자리연습 준비중이에요!</h2>
+          <p>손가락을 어느 자리에 놓아야 할지 알려주는 연습 메뉴를 열심히 만들고 있어요.<br>조금만 기다려주세요 🐾</p>
+        </div>
       </div>
-      <div class="secondary-row">
-        <button class="ghost-btn" id="show-rank-btn">🏆 순위 보기</button>
-        <button class="ghost-btn" id="how-to-btn">❓ 게임 방법</button>
+    </section>
+
+    <!-- 장문연습 준비중 -->
+    <section class="screen tab-screen" data-tab="jangmun">
+      <div class="placeholder-wrap">
+        <div class="placeholder-card">
+          <span class="big-emoji">📖</span>
+          <h2>장문연습 준비중이에요!</h2>
+          <p>긴 문장을 따라 치면서 연습하는 메뉴를 만들고 있어요.<br>조금만 기다려주세요 🐾</p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- HOW TO PLAY -->
-  <section id="how-screen" class="screen">
-    <div class="panel center-text">
-      <h2>게임 방법</h2>
-      <p style="margin-top:10px; line-height:1.7;">
-        하늘에서 <b>번개냥의 단어</b>가 떨어져요.<br>
-        입력창에 떨어지는 단어와 <b>똑같이</b> 입력하면 번쩍! 하고 사라지며 점수를 얻어요.<br>
-        단어가 바닥(⚡번개줄⚡)에 닿기 전에 잡지 못하면 목숨을 하나 잃어요.<br>
-        목숨을 모두 잃으면 게임이 끝나고, 최고 점수는 순위표에 기록돼요.
-      </p>
-      <button class="primary-btn" id="how-back-btn" style="margin-top:16px;">← 돌아가기</button>
-    </div>
-  </section>
-
-  <!-- GAME SCREEN -->
-  <section id="game-screen" class="screen">
-    <div class="hud">
-      <div class="hud-item">
-        <div class="mascot-badge"><img src="번개냥.png" alt="번개냥"></div>
-        <span id="score-label">점수: 0</span>
-        <span id="combo-tag">🔥 콤보 x2</span>
+    <!-- 타자검정 준비중 -->
+    <section class="screen tab-screen" data-tab="geomjeong">
+      <div class="placeholder-wrap">
+        <div class="placeholder-card">
+          <span class="big-emoji">🏅</span>
+          <h2>타자검정 준비중이에요!</h2>
+          <p>타자 실력을 급수로 확인할 수 있는 검정 메뉴를 만들고 있어요.<br>조금만 기다려주세요 🐾</p>
+        </div>
       </div>
-      <div class="hud-item"><span id="hearts">❤️❤️❤️</span></div>
-      <button id="pause-btn">⏸ 일시정지</button>
-    </div>
+    </section>
 
-    <div id="play-field"></div>
+    <!-- 타자게임 : 난이도 선택 -->
+    <section id="game-home-screen" class="screen tab-screen active" data-tab="game">
+      <div class="scroll-pad">
+        <div class="hero">
+          <video id="hero-video" autoplay muted loop playsinline poster="번개냥전체.png">
+            <source src="번개냥.mp4" type="video/mp4">
+          </video>
+          <div class="title-badge">
+            <h1>⚡🐱 번개냥타자 🐱⚡</h1>
+            <p>번개처럼 떨어지는 단어를 빠르게 입력해서 잡아보세요!</p>
+          </div>
+        </div>
 
-    <div id="input-row">
-      <input id="typing-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력하세요">
-    </div>
-  </section>
-
-  <!-- PAUSE OVERLAY (simple screen swap) -->
-  <section id="pause-screen" class="screen">
-    <div class="panel center-text">
-      <h2>⏸ 일시정지</h2>
-      <p style="margin-top:8px;">번개냥이 잠시 쉬고 있어요.</p>
-      <button class="primary-btn" id="resume-btn" style="margin-top:14px;">▶ 계속하기</button>
-      <div style="margin-top:10px;">
-        <button class="ghost-btn" id="quit-btn">🏠 처음으로</button>
+        <div class="panel">
+          <h2>🎯 난이도를 선택하세요</h2>
+          <div class="diff-grid">
+            <button class="diff-btn diff-easy" data-diff="easy">🐣 쉬움<small>천천히 · 짧은 단어</small></button>
+            <button class="diff-btn diff-normal" data-diff="normal">🐱 보통<small>적당한 속도</small></button>
+            <button class="diff-btn diff-hard" data-diff="hard">⚡ 어려움<small>조금 더 빠르게</small></button>
+          </div>
+          <div class="secondary-row">
+            <button class="ghost-btn" id="show-rank-btn">🏆 순위 보기</button>
+            <button class="ghost-btn" id="how-to-btn">❓ 게임 방법</button>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- GAME OVER -->
-  <section id="over-screen" class="screen">
-    <div class="panel center-text">
-      <h2>⚡ 게임 종료! ⚡</h2>
-      <div id="final-score">0점</div>
-      <p id="over-sub"></p>
-      <div id="name-row">
-        <input id="name-input" type="text" maxlength="8" placeholder="이름(닉네임)을 입력하세요">
-        <button class="primary-btn" id="save-score-btn">저장</button>
+    <!-- 게임 방법 -->
+    <section id="how-screen" class="screen tab-screen" data-tab="game">
+      <div class="placeholder-wrap">
+        <div class="placeholder-card">
+          <span class="big-emoji">❓</span>
+          <h2>게임 방법</h2>
+          <p>
+            🌩️ 하늘에서 <b>번개냥의 단어</b>가 떨어져요.<br><br>
+            ⌨️ 입력창에 떨어지는 단어와 <b>똑같이</b> 입력하면 번쩍! 하고 사라지며 점수를 얻어요.<br><br>
+            💔 단어가 바닥에 닿기 전에 잡지 못하면 목숨을 하나 잃어요.<br><br>
+            🏆 목숨을 모두 잃으면 게임이 끝나고, 최고 점수는 순위표에 기록돼요.
+          </p>
+          <button class="primary-btn" id="how-back-btn" style="margin-top:16px;">← 돌아가기</button>
+        </div>
       </div>
-      <div class="secondary-row" style="margin-top:18px;">
-        <button class="primary-btn" id="retry-btn">🔁 다시 하기</button>
-        <button class="ghost-btn" id="over-rank-btn">🏆 순위표</button>
-        <button class="ghost-btn" id="over-home-btn">🏠 처음으로</button>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- RANK SCREEN -->
-  <section id="rank-screen" class="screen">
-    <div class="panel">
-      <h2 class="center-text">🏆 번개냥타자 명예의 전당</h2>
-      <div class="tabs">
-        <button class="tab-btn" data-diff="easy">쉬움</button>
-        <button class="tab-btn" data-diff="normal">보통</button>
-        <button class="tab-btn" data-diff="hard">어려움</button>
+    <!-- 게임 진행 -->
+    <section id="game-screen" class="screen tab-screen" data-tab="game">
+      <div class="hud">
+        <div class="hud-item">
+          <div class="mascot-badge"><img src="번개냥.png" alt="번개냥"></div>
+          <span id="score-label">⭐ 점수: 0</span>
+          <span id="combo-tag">🔥 콤보 x2</span>
+        </div>
+        <div class="hud-item"><span id="hearts">❤️❤️❤️</span></div>
+        <button id="pause-btn">⏸ 일시정지</button>
       </div>
-      <table class="rank-table">
-        <thead><tr><th>순위</th><th>이름</th><th>점수</th><th>날짜</th></tr></thead>
-        <tbody id="rank-body"></tbody>
-      </table>
-      <div class="center-text" style="margin-top:16px;">
-        <button class="primary-btn" id="rank-home-btn">🏠 처음으로</button>
-      </div>
-    </div>
-  </section>
 
-  <footer>만든이: 메타쌤 · 번개냥과 함께하는 타자 연습 🐾</footer>
+      <div id="play-field"></div>
+
+      <div id="input-row">
+        <input id="typing-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="✏️ 여기에 입력하세요">
+      </div>
+    </section>
+
+    <!-- 일시정지 -->
+    <section id="pause-screen" class="screen tab-screen" data-tab="game">
+      <div class="placeholder-wrap">
+        <div class="placeholder-card">
+          <span class="big-emoji">⏸️</span>
+          <h2>일시정지</h2>
+          <p>번개냥이 잠시 쉬고 있어요 😺</p>
+          <button class="primary-btn" id="resume-btn" style="margin-top:14px;">▶ 계속하기</button>
+          <div style="margin-top:10px;">
+            <button class="ghost-btn" id="quit-btn">🏠 처음으로</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 게임 종료 -->
+    <section id="over-screen" class="screen tab-screen" data-tab="game">
+      <div class="placeholder-wrap">
+        <div class="placeholder-card">
+          <h2>💥 게임 종료! ⚡</h2>
+          <div id="final-score">0점</div>
+          <p id="over-sub"></p>
+          <div id="name-row">
+            <input id="name-input" type="text" maxlength="8" placeholder="🐾 이름(닉네임)을 입력하세요">
+            <button class="primary-btn" id="save-score-btn">저장</button>
+          </div>
+          <div class="secondary-row" style="margin-top:18px;">
+            <button class="primary-btn" id="retry-btn">🔁 다시 하기</button>
+            <button class="ghost-btn" id="over-rank-btn">🏆 순위표</button>
+            <button class="ghost-btn" id="over-home-btn">🏠 처음으로</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 순위표 -->
+    <section id="rank-screen" class="screen tab-screen" data-tab="game">
+      <div class="scroll-pad">
+        <div class="panel">
+          <h2 class="center-text">🏆 번개냥타자 명예의 전당 🏆</h2>
+          <div class="tabs">
+            <button class="tab-btn" data-diff="easy">🐣 쉬움</button>
+            <button class="tab-btn" data-diff="normal">🐱 보통</button>
+            <button class="tab-btn" data-diff="hard">⚡ 어려움</button>
+          </div>
+          <table class="rank-table">
+            <thead><tr><th>순위</th><th>이름</th><th>점수</th><th>날짜</th></tr></thead>
+            <tbody id="rank-body"></tbody>
+          </table>
+          <div class="center-text" style="margin-top:16px;">
+            <button class="primary-btn" id="rank-home-btn">🏠 처음으로</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
 </div>
 
 <script>
 (function(){
   "use strict";
+
+  /* ---------------- 상단 메뉴 탭 ---------------- */
+  const navTabs = document.querySelectorAll(".nav-tab");
+  navTabs.forEach(tab => {
+    tab.addEventListener("click", () => switchTopTab(tab.dataset.tab));
+  });
+
+  function switchTopTab(tabName){
+    navTabs.forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
+    if(tabName !== "game"){
+      stopActiveGameIfAny();
+    }
+    document.querySelectorAll(".tab-screen").forEach(s => s.classList.remove("active"));
+    if(tabName === "game"){
+      showScreen(lastGameScreen || "game-home-screen");
+    } else {
+      document.querySelector('.tab-screen[data-tab="'+tabName+'"]').classList.add("active");
+    }
+  }
+
+  const fsBtn = document.getElementById("fullscreen-btn");
+  fsBtn.addEventListener("click", () => {
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen().catch(()=>{});
+    }
+  });
 
   /* ---------------- 단어 목록 ---------------- */
   const WORDS = {
@@ -433,15 +581,15 @@
            "토끼","강아지","딸기","오이","감자","병아리","참새","의자","연필","가방"],
     normal: ["컴퓨터","키보드","마우스","도서관","운동장","선생님","교실","축구공","놀이터","자전거",
              "피아노","그림책","수영장","떡볶이","김밥","색연필","지우개","필통","우산","급식실"],
-    hard: ["번개고양이","프로그래밍","스마트폰","도전과제","순간이동","무한반복","타자연습왕","전광석화",
-           "태권도장","문방구","놀이공원","체육대회","방과후수업","컴퓨터실","노트북","무선키보드",
-           "초고속인터넷","집중력향상","손가락운동","최고기록경신"]
+    hard: ["스마트폰","놀이공원","체육대회","컴퓨터실","무선키보드","방과후수업","태권도장","문방구",
+           "급식시간","도서관책","축구경기","겨울방학","여름방학","생일파티","어린이날","크리스마스",
+           "딱지치기","술래잡기","줄넘기시합","눈싸움놀이"]
   };
 
   const DIFF_SETTINGS = {
     easy:   { fallMin:8000, fallMax:10500, spawnMin:1500, spawnMax:2400, maxOnScreen:2, scoreMul:1 },
-    normal: { fallMin:6000, fallMax:8000,  spawnMin:1100, spawnMax:1800, maxOnScreen:3, scoreMul:1.4 },
-    hard:   { fallMin:4200, fallMax:6000,  spawnMin:800,  spawnMax:1400, maxOnScreen:4, scoreMul:2 }
+    normal: { fallMin:6200, fallMax:8200,  spawnMin:1150, spawnMax:1850, maxOnScreen:3, scoreMul:1.4 },
+    hard:   { fallMin:5500, fallMax:7500,  spawnMin:1000, spawnMax:1700, maxOnScreen:3, scoreMul:1.8 }
   };
   const DIFF_LABEL = { easy:"쉬움", normal:"보통", hard:"어려움" };
   const RANK_KEY = "bungaenyang_typing_scores_v1";
@@ -453,20 +601,33 @@
     lives: 3,
     combo: 0,
     running: false,
-    words: [],       // {el, text, x, y, duration, startTime, id}
+    words: [],
     spawnTimer: null,
-    rafId: null,
-    lastFrame: 0
+    rafId: null
   };
   let wordIdSeq = 0;
+  let lastGameScreen = "game-home-screen";
 
   /* ---------------- 화면 전환 ---------------- */
   function showScreen(id){
-    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".tab-screen").forEach(s => s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
+    if(document.getElementById(id).dataset.tab === "game"){
+      lastGameScreen = id;
+    }
   }
 
-  /* ---------------- 오디오 (Web Audio API, 짧은 효과음) ---------------- */
+  function stopActiveGameIfAny(){
+    if(state.running){
+      state.running = false;
+      clearTimeout(state.spawnTimer);
+      cancelAnimationFrame(state.rafId);
+      state.words.forEach(w => w.el.remove());
+      state.words = [];
+    }
+  }
+
+  /* ---------------- 오디오 ---------------- */
   let audioCtx = null;
   function ensureAudio(){
     if(!audioCtx){
@@ -486,19 +647,15 @@
     g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
     osc.stop(audioCtx.currentTime + dur);
   }
-  function sfxCatch(comboLevel){
-    beep(520 + Math.min(comboLevel,10)*30, 0.12, "square", 0.05);
-  }
-  function sfxMiss(){
-    beep(140, 0.25, "sawtooth", 0.05);
-  }
+  function sfxCatch(comboLevel){ beep(520 + Math.min(comboLevel,10)*30, 0.12, "square", 0.05); }
+  function sfxMiss(){ beep(140, 0.25, "sawtooth", 0.05); }
   function sfxOver(){
     beep(300,0.15,"sine",0.05);
     setTimeout(()=>beep(220,0.2,"sine",0.05), 140);
     setTimeout(()=>beep(160,0.3,"sine",0.05), 300);
   }
 
-  /* ---------------- 게임 시작/종료 ---------------- */
+  /* ---------------- 게임 ---------------- */
   const field = document.getElementById("play-field");
   const input = document.getElementById("typing-input");
   const scoreLabel = document.getElementById("score-label");
@@ -520,12 +677,11 @@
     input.disabled = false;
     input.focus();
     scheduleSpawn(true);
-    state.lastFrame = performance.now();
     state.rafId = requestAnimationFrame(loop);
   }
 
   function updateHUD(){
-    scoreLabel.textContent = "점수: " + state.score;
+    scoreLabel.textContent = "⭐ 점수: " + state.score;
     heartsEl.textContent = "❤️".repeat(Math.max(state.lives,0)) + "🖤".repeat(3-Math.max(state.lives,0));
     if(state.combo >= 2){
       comboTag.textContent = "🔥 콤보 x" + state.combo;
@@ -563,22 +719,22 @@
     el.style.top = "-40px";
 
     const duration = cfg.fallMin + Math.random()*(cfg.fallMax-cfg.fallMin);
-    const word = { id: ++wordIdSeq, el, text, duration, start: performance.now(), fieldH: field.clientHeight, elH: el.offsetHeight };
+    const word = { id: ++wordIdSeq, el, text, duration, start: performance.now(), elH: el.offsetHeight };
     state.words.push(word);
   }
 
   function loop(now){
     if(!state.running) return;
+    const fieldH = field.clientHeight;
     for(let i = state.words.length - 1; i >= 0; i--){
       const w = state.words[i];
       const t = (now - w.start) / w.duration;
       if(t >= 1){
-        // 바닥에 닿음: 목숨 감소
         removeWord(w, false);
         loseLife();
         continue;
       }
-      const y = -40 + t * (w.fieldH - w.elH + 40);
+      const y = -40 + t * (fieldH - w.elH + 40);
       w.el.style.top = y + "px";
       if(t > 0.75){ w.el.classList.add("danger"); }
     }
@@ -626,10 +782,18 @@
     }
   }
 
-  input.addEventListener("input", function(){
+  /* IME(한글 조합) 안전 처리:
+     조합이 끝나기 전(isComposing===true)에는 절대 input.value를 건드리지 않는다.
+     조합이 끝난 시점(compositionend)과, 조합 중이 아닌 일반 input 이벤트에서만 매칭을 시도한다.
+     -> 타이핑 중간에 글자가 사라지는 문제를 방지 */
+  let composing = false;
+  input.addEventListener("compositionstart", () => { composing = true; });
+  input.addEventListener("compositionend", () => {
+    composing = false;
     tryMatch(input.value.trim());
   });
-  input.addEventListener("compositionend", function(){
+  input.addEventListener("input", (e) => {
+    if(composing || e.isComposing) return;
     tryMatch(input.value.trim());
   });
 
@@ -642,7 +806,7 @@
     input.disabled = true;
     sfxOver();
     document.getElementById("final-score").textContent = state.score + "점";
-    document.getElementById("over-sub").textContent = DIFF_LABEL[state.diff] + " 난이도 결과예요. 이름을 남기고 순위에 도전해보세요!";
+    document.getElementById("over-sub").textContent = "🐾 " + DIFF_LABEL[state.diff] + " 난이도 결과예요. 이름을 남기고 순위에 도전해보세요!";
     document.getElementById("name-input").value = "";
     showScreen("over-screen");
   }
@@ -655,19 +819,19 @@
     showScreen("pause-screen");
   }
   function resumeGame(){
+    const now = performance.now();
+    state.words.forEach(w => { w.start = now - (w._elapsedAtPause || 0); });
     state.running = true;
     showScreen("game-screen");
     input.focus();
-    state.words.forEach(w => { w.start += performance.now() - (w._pausedAt || performance.now()); });
     scheduleSpawn(false);
     state.rafId = requestAnimationFrame(loop);
   }
 
   /* ---------------- 순위 저장/조회 ---------------- */
   function loadRanks(){
-    try{
-      return JSON.parse(localStorage.getItem(RANK_KEY)) || {easy:[],normal:[],hard:[]};
-    }catch(e){ return {easy:[],normal:[],hard:[]}; }
+    try{ return JSON.parse(localStorage.getItem(RANK_KEY)) || {easy:[],normal:[],hard:[]}; }
+    catch(e){ return {easy:[],normal:[],hard:[]}; }
   }
   function saveRanks(data){
     try{ localStorage.setItem(RANK_KEY, JSON.stringify(data)); }catch(e){}
@@ -682,16 +846,17 @@
     data[diff] = data[diff].slice(0, 10);
     saveRanks(data);
   }
+  const MEDALS = ["🥇","🥈","🥉"];
   function renderRank(diff){
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.diff === diff));
     const data = loadRanks();
     const rows = data[diff] || [];
     const body = document.getElementById("rank-body");
     if(rows.length === 0){
-      body.innerHTML = '<tr><td colspan="4" style="padding:20px; color:#9fb2cf;">아직 기록이 없어요. 첫 번째 도전자가 되어보세요!</td></tr>';
+      body.innerHTML = '<tr><td colspan="4" style="padding:20px; color:#9fb2cf;">아직 기록이 없어요. 첫 번째 도전자가 되어보세요! 🌟</td></tr>';
       return;
     }
-    body.innerHTML = rows.map((r,i) => `<tr><td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${r.score}</td><td>${r.date}</td></tr>`).join("");
+    body.innerHTML = rows.map((r,i) => `<tr><td>${MEDALS[i] || (i+1)}</td><td>${escapeHtml(r.name)}</td><td>${r.score}</td><td>${r.date}</td></tr>`).join("");
   }
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));
@@ -706,24 +871,21 @@
     showScreen("rank-screen");
   });
   document.getElementById("how-to-btn").addEventListener("click", () => showScreen("how-screen"));
-  document.getElementById("how-back-btn").addEventListener("click", () => showScreen("start-screen"));
+  document.getElementById("how-back-btn").addEventListener("click", () => showScreen("game-home-screen"));
   document.getElementById("pause-btn").addEventListener("click", pauseGame);
   document.getElementById("resume-btn").addEventListener("click", resumeGame);
   document.getElementById("quit-btn").addEventListener("click", () => {
-    state.running = false;
-    clearTimeout(state.spawnTimer);
-    cancelAnimationFrame(state.rafId);
+    stopActiveGameIfAny();
     field.innerHTML = "";
-    state.words = [];
-    showScreen("start-screen");
+    showScreen("game-home-screen");
   });
   document.getElementById("retry-btn").addEventListener("click", () => startGame(state.diff));
   document.getElementById("over-rank-btn").addEventListener("click", () => {
     renderRank(state.diff);
     showScreen("rank-screen");
   });
-  document.getElementById("over-home-btn").addEventListener("click", () => showScreen("start-screen"));
-  document.getElementById("rank-home-btn").addEventListener("click", () => showScreen("start-screen"));
+  document.getElementById("over-home-btn").addEventListener("click", () => showScreen("game-home-screen"));
+  document.getElementById("rank-home-btn").addEventListener("click", () => showScreen("game-home-screen"));
   document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => renderRank(btn.dataset.diff));
   });
@@ -737,7 +899,6 @@
     if(e.key === "Enter") document.getElementById("save-score-btn").click();
   });
 
-  // 영상 로드 실패 시 이미지로 대체
   const heroVideo = document.getElementById("hero-video");
   heroVideo.addEventListener("error", () => { heroVideo.style.display = "none"; });
 

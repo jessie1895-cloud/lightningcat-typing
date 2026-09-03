@@ -328,6 +328,27 @@
     15%{ opacity:1; transform:translateY(-6px) scale(1.05); }
     100%{ opacity:0; transform:translateY(-46px) scale(1); }
   }
+  .answer-reveal{
+    position:absolute;
+    font-family:'Jua',sans-serif;
+    font-size:clamp(14px,1.8vw,20px);
+    color:#fff;
+    background:#5c6b8a;
+    padding:6px 14px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(20,40,90,.3);
+    white-space:nowrap;
+    pointer-events:none;
+    z-index:20;
+    animation:revealPop 1.7s ease-out forwards;
+  }
+  @keyframes revealPop{
+    0%{ opacity:0; transform:scale(.85); }
+    10%{ opacity:1; transform:scale(1.05); }
+    18%{ transform:scale(1); }
+    78%{ opacity:1; }
+    100%{ opacity:0; }
+  }
 
   #input-row{
     flex:0 0 auto;
@@ -1672,6 +1693,18 @@
     setTimeout(() => popup.remove(), 900);
   }
 
+  // 힌트(보너스) 단어를 놓쳐서 바닥에 닿으면, 다음에 또 나왔을 때 입력할 수 있도록 정답을 잠깐 보여준다
+  function showAnswerReveal(wordEl, text){
+    const reveal = document.createElement('div');
+    reveal.className = 'answer-reveal';
+    reveal.textContent = '정답: ' + text;
+    reveal.style.left = wordEl.style.left;
+    const topPx = Math.max(4, parseFloat(wordEl.style.top || '0') - 40);
+    reveal.style.top = topPx + 'px';
+    field.appendChild(reveal);
+    setTimeout(() => reveal.remove(), 1700);
+  }
+
   function loop(now){
     if(!state.running) return;
     const fieldH = field.clientHeight;
@@ -1679,6 +1712,7 @@
       const w = state.words[i];
       const t = (now - w.start) / w.duration;
       if(t >= 1){
+        if(w.hint){ showAnswerReveal(w.el, w.text); }
         removeWord(w, false);
         loseLife();
         continue;

@@ -1646,6 +1646,23 @@
     return CHOSUNG_LIST[lIndex];
   }
 
+  // 실제 한글 타자연습 프로그램처럼 "타수"를 계산한다.
+  // 완성된 한글 음절 하나는 눈에는 1글자로 보이지만 실제로는 초성+중성(+종성) 여러 번의 키 입력으로 만들어지므로,
+  // 받침이 없으면 2타(초성+중성), 받침이 있으면 3타(초성+중성+종성)로 센다. 한글이 아닌 글자(공백/영문/숫자 등)는 1타.
+  function countTasu(str){
+    let n = 0;
+    for(const ch of str){
+      const code = ch.charCodeAt(0);
+      if(code >= 0xAC00 && code <= 0xD7A3){
+        const jong = (code - 0xAC00) % 28;
+        n += jong === 0 ? 2 : 3;
+      } else {
+        n += 1;
+      }
+    }
+    return n;
+  }
+
   function maskWord(text){
     if(text.length < 2) return escapeHtml(text);
     const mode = Math.random() < 0.5 ? 'first' : 'middle';
@@ -2171,7 +2188,7 @@
   }
   renderJangmunList();
 
-  let jangmunState = { idx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalCorrect:0 };
+  let jangmunState = { idx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalTasu:0, totalCorrect:0 };
 
   const jangmunInput = document.createElement('input');
   jangmunInput.type = 'text';
@@ -2254,8 +2271,8 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('jangmun-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const minutes = elapsedMs/60000;
-    const curTyped = jangmunInput.value.length;
-    const cpm = minutes > 0 ? Math.round((jangmunState.totalChars + curTyped) / minutes) : 0;
+    const curTasu = countTasu(jangmunInput.value);
+    const cpm = minutes > 0 ? Math.round((jangmunState.totalTasu + curTasu) / minutes) : 0;
     document.getElementById('jangmun-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
@@ -2266,6 +2283,7 @@
     jangmunState.startTime = null;
     jangmunState.finished = false;
     jangmunState.totalChars = 0;
+    jangmunState.totalTasu = 0;
     jangmunState.totalCorrect = 0;
     if(jangmunState.timerId) clearInterval(jangmunState.timerId);
     const p = PASSAGES[idx];
@@ -2285,7 +2303,7 @@
     jangmunInput.disabled = true;
     const accuracy = jangmunState.totalChars > 0 ? Math.round(jangmunState.totalCorrect/jangmunState.totalChars*100) : 100;
     const elapsedSec = Math.max(1, (Date.now() - jangmunState.startTime)/1000);
-    const cpm = Math.round(jangmunState.totalChars / (elapsedSec/60));
+    const cpm = Math.round(jangmunState.totalTasu / (elapsedSec/60));
     sfxOver();
     document.getElementById('jangmun-result-stats').textContent =
       '⏱️ 소요시간: ' + Math.round(elapsedSec) + '초   ⌨️ 분당 타수: ' + cpm + '타   🎯 정확도: ' + accuracy + '%';
@@ -2322,6 +2340,7 @@
     let correctInLine = 0;
     for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
     jangmunState.totalChars += target.length;
+    jangmunState.totalTasu += countTasu(target);
     jangmunState.totalCorrect += correctInLine;
     jangmunState.lineIdx++;
     jangmunInput.value = '';
@@ -2402,7 +2421,7 @@
     return a;
   }
 
-  let jjalbState = { catIdx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalCorrect:0 };
+  let jjalbState = { catIdx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalTasu:0, totalCorrect:0 };
 
   const jjalbInput = document.createElement('input');
   jjalbInput.type = 'text';
@@ -2481,8 +2500,8 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('jjalb-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const minutes = elapsedMs/60000;
-    const curTyped = jjalbInput.value.length;
-    const cpm = minutes > 0 ? Math.round((jjalbState.totalChars + curTyped) / minutes) : 0;
+    const curTasu = countTasu(jjalbInput.value);
+    const cpm = minutes > 0 ? Math.round((jjalbState.totalTasu + curTasu) / minutes) : 0;
     document.getElementById('jjalb-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
@@ -2495,6 +2514,7 @@
     jjalbState.startTime = null;
     jjalbState.finished = false;
     jjalbState.totalChars = 0;
+    jjalbState.totalTasu = 0;
     jjalbState.totalCorrect = 0;
     if(jjalbState.timerId) clearInterval(jjalbState.timerId);
     document.getElementById('jjalb-title').textContent = cat.emoji + ' ' + cat.title;
@@ -2513,7 +2533,7 @@
     jjalbInput.disabled = true;
     const accuracy = jjalbState.totalChars > 0 ? Math.round(jjalbState.totalCorrect/jjalbState.totalChars*100) : 100;
     const elapsedSec = Math.max(1, (Date.now() - jjalbState.startTime)/1000);
-    const cpm = Math.round(jjalbState.totalChars / (elapsedSec/60));
+    const cpm = Math.round(jjalbState.totalTasu / (elapsedSec/60));
     sfxOver();
     document.getElementById('jjalb-result-stats').textContent =
       '⏱️ 소요시간: ' + Math.round(elapsedSec) + '초   ⌨️ 분당 타수: ' + cpm + '타   🎯 정확도: ' + accuracy + '%';
@@ -2550,6 +2570,7 @@
     let correctInLine = 0;
     for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
     jjalbState.totalChars += target.length;
+    jjalbState.totalTasu += countTasu(target);
     jjalbState.totalCorrect += correctInLine;
     jjalbState.lineIdx++;
     jjalbInput.value = '';
@@ -2610,10 +2631,17 @@
     return splitIntoLines(PASSAGES[geomjeongSelectedIdx].text);
   }
 
+  // 특정 지문을 선택했을 때는 반 전체가 같은 순서(지문의 처음부터)로 시험을 봐야 하므로 섞지 않는다.
+  // 지문을 선택하지 않은 "전체 랜덤" 모드일 때만 문장을 섞는다.
+  function getGeomjeongLinesForFill(){
+    const pool = getGeomjeongPool();
+    return geomjeongSelectedIdx === null ? shuffleArray(pool) : pool.slice();
+  }
+
   let geomjeongState = {
     name:'', totalSec:180, lines:[], lineIdx:0,
     startTime:0, endTime:0, timerId:null, finished:false,
-    totalChars:0, totalCorrect:0
+    totalChars:0, totalTasu:0, totalCorrect:0
   };
 
   const geomjeongInput = document.createElement('input');
@@ -2646,7 +2674,7 @@
   function ensureGeomjeongLines(){
     // 남은 문장이 얼마 없으면 미리 더 채워둔다 (검정 시간이 길어도 문제가 끊기지 않도록)
     if(geomjeongState.lineIdx > geomjeongState.lines.length - 10){
-      const more = shuffleArray(getGeomjeongPool());
+      const more = getGeomjeongLinesForFill();
       appendGeomjeongRows(more, geomjeongState.lines.length);
       geomjeongState.lines = geomjeongState.lines.concat(more);
     }
@@ -2712,8 +2740,8 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('geomjeong-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const elapsedMin = (now - geomjeongState.startTime)/60000;
-    const curTyped = geomjeongInput.value.length;
-    const cpm = elapsedMin > 0 ? Math.round((geomjeongState.totalChars + curTyped)/elapsedMin) : 0;
+    const curTasu = countTasu(geomjeongInput.value);
+    const cpm = elapsedMin > 0 ? Math.round((geomjeongState.totalTasu + curTasu)/elapsedMin) : 0;
     document.getElementById('geomjeong-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
@@ -2729,13 +2757,15 @@
     { name:'1급',      emoji:'⚡👑',  desc:'번개냥 마스터! 최고의 실력이에요!' }
   ];
   function calcGeomjeongGrade(cpm, accuracy){
+    // 분당 타수 계산 방식을 "글자 수" 대신 실제 "타수"(초성+중성+종성)로 바꾸면서
+    // 값이 약 2배 정도 커지므로, 급수 기준선도 그에 맞춰 2배로 올렸다.
     let level;
-    if(cpm >= 300) level = 6;
-    else if(cpm >= 250) level = 5;
-    else if(cpm >= 200) level = 4;
-    else if(cpm >= 150) level = 3;
-    else if(cpm >= 100) level = 2;
-    else if(cpm >= 50) level = 1;
+    if(cpm >= 600) level = 6;
+    else if(cpm >= 500) level = 5;
+    else if(cpm >= 400) level = 4;
+    else if(cpm >= 300) level = 3;
+    else if(cpm >= 200) level = 2;
+    else if(cpm >= 100) level = 1;
     else level = 0;
     if(accuracy < 80) level = Math.max(0, level - 2);
     else if(accuracy < 90) level = Math.max(0, level - 1);
@@ -2746,12 +2776,13 @@
     const nameVal = (document.getElementById('geomjeong-name').value || '').trim();
     geomjeongState.name = nameVal;
     geomjeongState.totalSec = Math.round(minutes*60);
-    geomjeongState.lines = shuffleArray(getGeomjeongPool());
+    geomjeongState.lines = getGeomjeongLinesForFill();
     geomjeongState.lineIdx = 0;
     geomjeongState.startTime = null;
     geomjeongState.endTime = null;
     geomjeongState.finished = false;
     geomjeongState.totalChars = 0;
+    geomjeongState.totalTasu = 0;
     geomjeongState.totalCorrect = 0;
     if(geomjeongState.timerId) clearInterval(geomjeongState.timerId);
     geomjeongInput.value = '';
@@ -2771,7 +2802,7 @@
     geomjeongInput.disabled = true;
     const elapsedSec = geomjeongState.startTime ? Math.max(1,(Date.now()-geomjeongState.startTime)/1000) : geomjeongState.totalSec;
     const accuracy = geomjeongState.totalChars > 0 ? Math.round(geomjeongState.totalCorrect/geomjeongState.totalChars*100) : 100;
-    const cpm = Math.round(geomjeongState.totalChars / (elapsedSec/60));
+    const cpm = Math.round(geomjeongState.totalTasu / (elapsedSec/60));
     const gradeInfo = calcGeomjeongGrade(cpm, accuracy);
 
     document.getElementById('geomjeong-cert-name').textContent = geomjeongState.name ? (geomjeongState.name + ' 님의 타자검정 결과') : '나의 타자검정 결과';
@@ -2843,6 +2874,7 @@
       let correctInLine = 0;
       for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
       geomjeongState.totalChars += target.length;
+      geomjeongState.totalTasu += countTasu(target);
       geomjeongState.totalCorrect += correctInLine;
       geomjeongState.lineIdx++;
       geomjeongInput.value = '';

@@ -1527,28 +1527,54 @@
      비워두면(기본값) 지금처럼 각 컴퓨터 안에서만 순위가 저장돼요(오프라인에서도 정상 작동). */
   const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzXg92pavkQrZz0Zvsb9_kZNRiMPOpSKA9V3ZpDDrm8hZWwJNY8iovFZ4tXiByH6xwvYQ/exec";
 
-  // 점수를 구글 시트로 전송한다 (실패해도 게임 진행에는 영향 없도록 조용히 무시한다).
+  // 점수를 구글 시트로 전송한다. 구글 앱스 스크립트 웹앱은 POST를 fetch로 보내면
+  // 내부 리다이렉트 과정에서 본문(body)이 사라지거나 CORS로 막히는 경우가 많아서,
+  // 데이터를 GET 쿼리스트링에 실어 보내고 응답은 굳이 읽지 않는(no-cors) 방식을 쓴다.
   function postScoreToSheet(payload){
     if(!SHEET_API_URL) return;
     try{
-      fetch(SHEET_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 구글 앱스 스크립트 CORS 사전요청 회피용
-        body: JSON.stringify(payload)
-      }).catch(() => {});
+      const qs = new URLSearchParams(Object.assign({ action:'save' }, payload));
+      fetch(SHEET_API_URL + '?' + qs.toString(), { mode:'no-cors' }).catch(() => {});
     }catch(e){}
   }
 
-  // 구글 시트에서 전체 순위를 불러온다. 실패하면 null을 돌려줘서 호출부가 로컬 기록으로 대신하게 한다.
-  async function fetchSheetRank(type, diff, limit){
-    if(!SHEET_API_URL) return null;
-    try{
-      const qs = new URLSearchParams({ type, diff: diff||'', limit: limit||10 });
-      const res = await fetch(SHEET_API_URL + '?' + qs.toString());
-      if(!res.ok) return null;
-      const data = await res.json();
-      return (data && data.ok) ? data.rows : null;
-    }catch(e){ return null; }
+  // 구글 시트에서 전체 순위를 불러온다. fetch 대신 JSONP(<script> 태그) 방식을 써서
+  // 브라우저의 CORS 제약을 아예 우회한다. 실패/시간초과 시 null을 돌려줘서
+  // 호출부가 로컬 기록으로 대신 보여주게 한다.
+  function fetchSheetRank(type, diff, limit){
+    return new Promise((resolve) => {
+      if(!SHEET_API_URL){ resolve(null); return; }
+      const cbName = 'sheetCb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+      let done = false;
+      const script = document.createElement('script');
+      const cleanup = () => {
+        delete window[cbName];
+        if(script.parentNode) script.parentNode.removeChild(script);
+      };
+      const timer = setTimeout(() => {
+        if(done) return;
+        done = true;
+        cleanup();
+        resolve(null);
+      }, 6000);
+      window[cbName] = (data) => {
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        resolve((data && data.ok) ? data.rows : null);
+      };
+      script.onerror = () => {
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        resolve(null);
+      };
+      const qs = new URLSearchParams({ type, diff: diff||'', limit: limit||10, callback: cbName });
+      script.src = SHEET_API_URL + '?' + qs.toString();
+      document.head.appendChild(script);
+    });
   }
 
   /* ---------------- 상태 ---------------- */

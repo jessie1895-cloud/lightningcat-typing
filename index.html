@@ -1520,6 +1520,37 @@
   const DIFF_LABEL = { easy:"쉬움", normal:"보통", hard:"어려움" };
   const RANK_KEY = "bungaenyang_typing_scores_v1";
 
+  /* ---------------- 반 전체 순위 공유 (구글 시트) ----------------
+     선생님이 구글 시트 + Apps Script 웹앱을 배포한 뒤, 아래 SHEET_API_URL에
+     그 배포 주소(https://script.google.com/macros/s/....../exec)를 넣으면
+     모든 교실 컴퓨터의 점수가 한 곳에 모여서 전체 순위로 보여요.
+     비워두면(기본값) 지금처럼 각 컴퓨터 안에서만 순위가 저장돼요(오프라인에서도 정상 작동). */
+  const SHEET_API_URL = "";
+
+  // 점수를 구글 시트로 전송한다 (실패해도 게임 진행에는 영향 없도록 조용히 무시한다).
+  function postScoreToSheet(payload){
+    if(!SHEET_API_URL) return;
+    try{
+      fetch(SHEET_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 구글 앱스 스크립트 CORS 사전요청 회피용
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    }catch(e){}
+  }
+
+  // 구글 시트에서 전체 순위를 불러온다. 실패하면 null을 돌려줘서 호출부가 로컬 기록으로 대신하게 한다.
+  async function fetchSheetRank(type, diff, limit){
+    if(!SHEET_API_URL) return null;
+    try{
+      const qs = new URLSearchParams({ type, diff: diff||'', limit: limit||10 });
+      const res = await fetch(SHEET_API_URL + '?' + qs.toString());
+      if(!res.ok) return null;
+      const data = await res.json();
+      return (data && data.ok) ? data.rows : null;
+    }catch(e){ return null; }
+  }
+
   /* ---------------- 상태 ---------------- */
   let state = {
     diff: "easy",
@@ -1845,22 +1876,29 @@
     if(!data[diff]) data[diff] = [];
     const today = new Date();
     const dateStr = (today.getMonth()+1) + "/" + today.getDate();
-    data[diff].push({ name: name || "익명", score, date: dateStr });
+    const nameVal = name || "익명";
+    data[diff].push({ name: nameVal, score, date: dateStr });
     data[diff].sort((a,b) => b.score - a.score);
     data[diff] = data[diff].slice(0, 10);
     saveRanks(data);
+    postScoreToSheet({ type:'game', diff, name: nameVal, score, date: dateStr });
   }
   const MEDALS = ["🥇","🥈","🥉"];
-  function renderRank(diff){
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.diff === diff));
-    const data = loadRanks();
-    const rows = data[diff] || [];
+  function renderRankRows(rows){
     const body = document.getElementById("rank-body");
-    if(rows.length === 0){
+    if(!rows || rows.length === 0){
       body.innerHTML = '<tr><td colspan="4" style="padding:20px; color:#9fb2cf;">아직 기록이 없어요. 첫 번째 도전자가 되어보세요! 🌟</td></tr>';
       return;
     }
     body.innerHTML = rows.map((r,i) => `<tr><td>${MEDALS[i] || (i+1)}</td><td>${escapeHtml(r.name)}</td><td>${r.score}</td><td>${r.date}</td></tr>`).join("");
+  }
+  async function renderRank(diff){
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.diff === diff));
+    const data = loadRanks();
+    const localRows = data[diff] || [];
+    renderRankRows(localRows); // 우선 로컬 기록을 바로 보여주고
+    const sheetRows = await fetchSheetRank('game', diff, 10); // 전체 순위가 있으면 이어서 교체
+    if(sheetRows) renderRankRows(sheetRows);
   }
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));
@@ -2838,21 +2876,28 @@
     const list = loadGeomjeongRanks();
     const today = new Date();
     const dateStr = (today.getMonth()+1) + '/' + today.getDate();
-    list.push({ name: name || '익명', cpm, accuracy, grade: gradeInfo.name, emoji: gradeInfo.emoji, date: dateStr });
+    const nameVal = name || '익명';
+    list.push({ name: nameVal, cpm, accuracy, grade: gradeInfo.name, emoji: gradeInfo.emoji, date: dateStr });
     list.sort((a,b) => b.cpm - a.cpm);
     saveGeomjeongRanks(list.slice(0, 10));
+    postScoreToSheet({ type:'geomjeong', name: nameVal, cpm, accuracy, grade: gradeInfo.name, emoji: gradeInfo.emoji, date: dateStr });
   }
   const GEOMJEONG_MEDALS = ['🥇','🥈','🥉'];
-  function renderGeomjeongRank(){
-    const list = loadGeomjeongRanks();
+  function renderGeomjeongRankRows(list){
     const body = document.getElementById('geomjeong-rank-body');
-    if(list.length === 0){
+    if(!list || list.length === 0){
       body.innerHTML = '<tr><td colspan="6" style="padding:20px; color:#9fb2cf;">아직 기록이 없어요. 첫 번째 도전자가 되어보세요! 🌟</td></tr>';
       return;
     }
     body.innerHTML = list.map((r,i) =>
       '<tr><td>'+(GEOMJEONG_MEDALS[i] || (i+1))+'</td><td>'+escapeHtml(r.name)+'</td><td>'+r.emoji+' '+r.grade+'</td><td>'+r.cpm+'</td><td>'+r.accuracy+'%</td><td>'+r.date+'</td></tr>'
     ).join('');
+  }
+  async function renderGeomjeongRank(){
+    const localList = loadGeomjeongRanks();
+    renderGeomjeongRankRows(localList); // 우선 로컬 기록을 바로 보여주고
+    const sheetRows = await fetchSheetRank('geomjeong', '', 10); // 전체 순위가 있으면 이어서 교체
+    if(sheetRows) renderGeomjeongRankRows(sheetRows);
   }
 
   function stopGeomjeong(){

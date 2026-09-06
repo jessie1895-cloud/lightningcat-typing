@@ -1538,6 +1538,24 @@
     }catch(e){}
   }
 
+  // 구글 시트 기록과 방금 이 컴퓨터에서 저장한 로컬 기록을 합쳐서 순위를 만든다.
+  // 방금 저장한 점수가 구글 시트에 아직 반영되기 전(전송 중/서버 지연)에 순위를 다시 불러오면
+  // 시트 쪽에는 아직 없을 수 있는데, 그렇다고 화면에서 방금 딴 기록이 사라지면 안 되므로
+  // 두 목록을 합치고 중복(이름+점수+날짜가 같은 기록)만 제거한 뒤 다시 정렬한다.
+  function mergeRankLists(sheetRows, localRows, sortKey){
+    const merged = (sheetRows || []).concat(localRows || []);
+    const seen = new Set();
+    const deduped = [];
+    merged.forEach(r => {
+      const key = r.name + '|' + r[sortKey] + '|' + r.date;
+      if(seen.has(key)) return;
+      seen.add(key);
+      deduped.push(r);
+    });
+    deduped.sort((a,b) => b[sortKey] - a[sortKey]);
+    return deduped.slice(0, 10);
+  }
+
   // 구글 시트에서 전체 순위를 불러온다. fetch 대신 JSONP(<script> 태그) 방식을 써서
   // 브라우저의 CORS 제약을 아예 우회한다. 실패/시간초과 시 null을 돌려줘서
   // 호출부가 로컬 기록으로 대신 보여주게 한다.
@@ -1923,8 +1941,8 @@
     const data = loadRanks();
     const localRows = data[diff] || [];
     renderRankRows(localRows); // 우선 로컬 기록을 바로 보여주고
-    const sheetRows = await fetchSheetRank('game', diff, 10); // 전체 순위가 있으면 이어서 교체
-    if(sheetRows) renderRankRows(sheetRows);
+    const sheetRows = await fetchSheetRank('game', diff, 10); // 전체 순위가 있으면 로컬 기록과 합쳐서 교체
+    if(sheetRows) renderRankRows(mergeRankLists(sheetRows, localRows, 'score'));
   }
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));
@@ -2922,8 +2940,8 @@
   async function renderGeomjeongRank(){
     const localList = loadGeomjeongRanks();
     renderGeomjeongRankRows(localList); // 우선 로컬 기록을 바로 보여주고
-    const sheetRows = await fetchSheetRank('geomjeong', '', 10); // 전체 순위가 있으면 이어서 교체
-    if(sheetRows) renderGeomjeongRankRows(sheetRows);
+    const sheetRows = await fetchSheetRank('geomjeong', '', 10); // 전체 순위가 있으면 로컬 기록과 합쳐서 교체
+    if(sheetRows) renderGeomjeongRankRows(mergeRankLists(sheetRows, localList, 'cpm'));
   }
 
   function stopGeomjeong(){

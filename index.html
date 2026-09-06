@@ -1544,10 +1544,12 @@
   // 두 목록을 합치고 중복(이름+점수+날짜가 같은 기록)만 제거한 뒤 다시 정렬한다.
   function mergeRankLists(sheetRows, localRows, sortKey){
     const merged = (sheetRows || []).concat(localRows || []);
+    // 날짜 표기 형식이 로컬/시트 사이에 살짝 달라질 수 있어(예: "9/6" vs 다른 형식),
+    // 날짜는 중복 판정에 쓰지 않고 이름+점수만으로 같은 기록인지 판단한다.
     const seen = new Set();
     const deduped = [];
     merged.forEach(r => {
-      const key = r.name + '|' + r[sortKey] + '|' + r.date;
+      const key = r.name + '|' + r[sortKey];
       if(seen.has(key)) return;
       seen.add(key);
       deduped.push(r);

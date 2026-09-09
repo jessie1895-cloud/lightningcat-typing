@@ -1540,10 +1540,12 @@
            "딱지치기","술래잡기","줄넘기시합","눈싸움놀이"]
   };
 
+  // 저학년 학생들이 특히 쉬움 단계에서 글자가 너무 빨리 떨어져 어려워해서, 떨어지는 시간(fallMin/fallMax)을
+  // 전반적으로 늘려 더 천천히 내려오도록 했다 (쉬움 단계를 가장 크게 늘림).
   const DIFF_SETTINGS = {
-    easy:   { fallMin:8000, fallMax:10500, spawnMin:1500, spawnMax:2400, maxOnScreen:2, scoreMul:1 },
-    normal: { fallMin:6200, fallMax:8200,  spawnMin:1150, spawnMax:1850, maxOnScreen:3, scoreMul:1.4 },
-    hard:   { fallMin:5500, fallMax:7500,  spawnMin:1000, spawnMax:1700, maxOnScreen:3, scoreMul:1.8 }
+    easy:   { fallMin:10000, fallMax:13000, spawnMin:1500, spawnMax:2400, maxOnScreen:2, scoreMul:1 },
+    normal: { fallMin:7400,  fallMax:9700,  spawnMin:1150, spawnMax:1850, maxOnScreen:3, scoreMul:1.4 },
+    hard:   { fallMin:6300,  fallMax:8500,  spawnMin:1000, spawnMax:1700, maxOnScreen:3, scoreMul:1.8 }
   };
   const DIFF_LABEL = { easy:"쉬움", normal:"보통", hard:"어려움" };
   const RANK_KEY = "bungaenyang_typing_scores_v1";
@@ -1752,8 +1754,9 @@
   }
 
   /* 보너스 힌트 트릭: 가끔 단어의 첫 글자나 가운데 글자를 초성(자음)만 남기고 가려서 보여주고,
-     저학년도 쉽게 유추할 수 있도록 자음 힌트를 준다. 원래 단어를 끝까지 입력하면 점수를 더 많이 준다 */
-  const HINT_CHANCE = 0.22;
+     저학년도 쉽게 유추할 수 있도록 자음 힌트를 준다. 원래 단어를 끝까지 입력하면 점수를 더 많이 준다.
+     너무 자주 나와서 어렵다는 의견이 있어 등장 확률을 약간 낮췄다. */
+  const HINT_CHANCE = 0.15;
   const HINT_PLACEHOLDER = '○';
   const HINT_SCORE_MULTIPLIER = 1.8;
   // 하트(목숨)가 하나씩만 줄어들면 단조로울 수 있어서, 보너스 힌트 단어를 연속으로
@@ -1770,15 +1773,22 @@
   }
 
   // 실제 한글 타자연습 프로그램처럼 "타수"를 계산한다.
-  // 완성된 한글 음절 하나는 눈에는 1글자로 보이지만 실제로는 초성+중성(+종성) 여러 번의 키 입력으로 만들어지므로,
-  // 받침이 없으면 2타(초성+중성), 받침이 있으면 3타(초성+중성+종성)로 센다. 한글이 아닌 글자(공백/영문/숫자 등)는 1타.
+  // 완성된 한글 음절 하나는 눈에는 1글자로 보이지만 실제로는 초성+중성(+종성) 여러 번의 키 입력으로 만들어진다.
+  // 초성은 항상 1타(쌍자음도 Shift+자음 한 번). 중성/종성 중 겹모음(ㅘㅙㅚㅝㅞㅟㅢ)이나 겹받침(ㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄ)은
+  // 실제로 자판을 두 번 눌러야 만들어지므로 2타로 센다. 한글이 아닌 글자(공백/영문/숫자 등)는 1타.
+  const COMPLEX_JUNGSUNG = new Set([9,10,11,14,15,16,19]); // ㅘㅙㅚㅝㅞㅟㅢ: 모음 두 개를 눌러 조합
+  const COMPLEX_JONGSUNG = new Set([3,5,6,9,10,11,12,13,14,15,18]); // ㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄ: 자음 두 개를 눌러 조합
   function countTasu(str){
     let n = 0;
     for(const ch of str){
       const code = ch.charCodeAt(0);
       if(code >= 0xAC00 && code <= 0xD7A3){
-        const jong = (code - 0xAC00) % 28;
-        n += jong === 0 ? 2 : 3;
+        const off = code - 0xAC00;
+        const jong = off % 28;
+        const jung = Math.floor(off / 28) % 21;
+        n += 1; // 초성
+        n += COMPLEX_JUNGSUNG.has(jung) ? 2 : 1; // 중성
+        if(jong !== 0) n += COMPLEX_JONGSUNG.has(jong) ? 2 : 1; // 종성
       } else {
         n += 1;
       }
@@ -2337,7 +2347,7 @@
   }
   renderJangmunList();
 
-  let jangmunState = { idx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalTasu:0, totalCorrect:0 };
+  let jangmunState = { idx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalTasu:0, totalCorrect:0, prevInputLen:0 };
 
   const jangmunInput = document.createElement('input');
   jangmunInput.type = 'text';
@@ -2420,8 +2430,8 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('jangmun-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const minutes = elapsedMs/60000;
-    const curTasu = countTasu(jangmunInput.value);
-    const cpm = minutes > 0 ? Math.round((jangmunState.totalTasu + curTasu) / minutes) : 0;
+    // totalTasu는 입력 중인 현재 줄의 타수도 실시간으로 이미 반영하고 있으므로 따로 더하지 않는다.
+    const cpm = minutes > 0 ? Math.round(jangmunState.totalTasu / minutes) : 0;
     document.getElementById('jangmun-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
@@ -2434,6 +2444,7 @@
     jangmunState.totalChars = 0;
     jangmunState.totalTasu = 0;
     jangmunState.totalCorrect = 0;
+    jangmunState.prevInputLen = 0;
     if(jangmunState.timerId) clearInterval(jangmunState.timerId);
     const p = PASSAGES[idx];
     document.getElementById('jangmun-title').textContent = p.title;
@@ -2474,6 +2485,13 @@
       jangmunState.startTime = Date.now();
       jangmunState.timerId = setInterval(tickJangmunStats, 250);
     }
+    const typed = jangmunInput.value;
+    // 오타를 내고 지웠다가 다시 입력하는 것도 실제로 손가락을 움직인 타수이므로,
+    // 입력창에 새로 늘어난 글자만큼 그때그때 타수를 누적한다 (지워도 이미 쌓인 타수는 그대로 유지).
+    if(typed.length > jangmunState.prevInputLen){
+      jangmunState.totalTasu += countTasu(typed.slice(jangmunState.prevInputLen));
+    }
+    jangmunState.prevInputLen = typed.length;
     renderCurrentJangmunRef();
   });
 
@@ -2489,10 +2507,10 @@
     let correctInLine = 0;
     for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
     jangmunState.totalChars += target.length;
-    jangmunState.totalTasu += countTasu(target);
     jangmunState.totalCorrect += correctInLine;
     jangmunState.lineIdx++;
     jangmunInput.value = '';
+    jangmunState.prevInputLen = 0;
     if(jangmunState.lineIdx >= jangmunState.lines.length){
       finishJangmun();
     } else {
@@ -2524,7 +2542,8 @@
     { title:"세계 여러 나라 & 여행", emoji:"✈️", words:["한국","일본","중국","미국","영국","프랑스","독일","스위스","캐나다","호주","이집트","브라질","여권","비행기","여행","에펠탑","피라미드","만리장성","자유의 여신상","빅벤","타지마할","관광지","공항","캐리어","지도","배낭여행","자유여행","휴양지","기념품","나이아가라","세계 지도","지구촌 여행","나이아가라 폭포","샌프란시스코","에펠탑 야경","알프스 산맥","사하라 탐험","세계 유산","문화 체험","여권 도장","비행기 표","타임스퀘어","남극 탐험","크루즈 여행","베네치아 운하"] },
     { title:"우주 & 과학 탐험", emoji:"🔭", words:["우주","태양","지구","달","화성","목성","토성","금성","수성","은하","별빛","혜성","유성","인공","로켓","우주선","우주복","무중력","천망경","우주인","은하수","블랙홀","탐사선","미니 위성","행성","별자리","별똥별","과학관","실험실","태양계","우주 정거장","인공위성","우주 탐사","태양계 행성","화성 탐사선","무중력 체험","천문대 관측","별자리 찾기","우주 발사장","과학 실험","혜성 충돌","은하계 여행","로켓 발사","과학 경진 대회","우주 과학자"] },
     { title:"귀여운 탈것 & 교통", emoji:"🚗", words:["차","기차","버스","택시","배","비행기","헬기","자전거","킥보드","전동","지하철","트럭","경찰차","소방차","구급차","스쿨버스","고속열차","케이블카","모노레일","잠수함","열기구","요트","크루즈","캠핑카","포크레인","레미콘","스포츠카","전기차","드론","덤프트럭","노란 스쿨버스","친환경 전기차","자율주행차","자전거 타기","씽씽 킥보드","초고속 열차","소방차 출동","경찰차 사이렌","바다 크루즈","하늘 위 열기구","케이블카 여행","드론 날리기","포크레인 중장비","지하철 노선","캠핑카 여행"] },
-    { title:"신나는 계절 & 명절", emoji:"🍁", words:["봄","여름","가을","겨울","단풍","눈꽃","매화","벚꽃","해수욕","캠핑","설날","추석","한가위","연날리기","떡국","봄소풍","여름방학","단풍놀이","겨울방학","크리스마스","산타","눈사람","송편","세배","쥐불놀이","부럼","달맞이","제기차기","팽이치기","벚꽃 축제","물놀이 가자","단풍잎 줍기","눈싸움 하자","즐거운 설날","풍성한 추석","세뱃돈 받기","송편 만들기","연날리기 대회","팽이 챔피언","여름 피서","겨울 썰매장","크리스마스 선물","밤하늘 보름달","계절의 변화"] }
+    { title:"신나는 계절 & 명절", emoji:"🍁", words:["봄","여름","가을","겨울","단풍","눈꽃","매화","벚꽃","해수욕","캠핑","설날","추석","한가위","연날리기","떡국","봄소풍","여름방학","단풍놀이","겨울방학","크리스마스","산타","눈사람","송편","세배","쥐불놀이","부럼","달맞이","제기차기","팽이치기","벚꽃 축제","물놀이 가자","단풍잎 줍기","눈싸움 하자","즐거운 설날","풍성한 추석","세뱃돈 받기","송편 만들기","연날리기 대회","팽이 챔피언","여름 피서","겨울 썰매장","크리스마스 선물","밤하늘 보름달","계절의 변화"] },
+    { title:"창현초 컴친구들", emoji:"🏫", words:["김서연","이예준","주은호","최로율","황유준","양이루다","이존신","이존은","이하윤","권다온","김도하","김하준","조윤빈","류태양","김주원","송다온","김아라","이승민","최건희","이성수","임채아","안연주","이시원","윤서준","이다은","이서준","정윤우","정희원","조용현","김시연","김영후","김학현","레오","박해강","백하윤","박지유","심선우","손예원","신승규","윤여준","이산","장민정","강민준","강수호","강현준","김리현","홍수현","김예인","노의진","성준민","심서아","임현석","이연우","임지민","김범준","이규현","서경준","주민건","김채린","김유건","이정안","이지성","조우현","서태성","김시호","노이주","김윤아","김지아","심승유","김재아","김이현","박유나","임지유","장유나","조정현","이은하","이푸른","이하늘","최영우","최유원","이연서","이은학","최원용","김민서","김민희","박채아"] }
   ];
 
   function renderJjalbList(){
@@ -2570,7 +2589,7 @@
     return a;
   }
 
-  let jjalbState = { catIdx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalTasu:0, totalCorrect:0 };
+  let jjalbState = { catIdx:0, lines:[], lineIdx:0, startTime:0, timerId:null, finished:false, totalChars:0, totalTasu:0, totalCorrect:0, prevInputLen:0 };
 
   const jjalbInput = document.createElement('input');
   jjalbInput.type = 'text';
@@ -2649,8 +2668,8 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('jjalb-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const minutes = elapsedMs/60000;
-    const curTasu = countTasu(jjalbInput.value);
-    const cpm = minutes > 0 ? Math.round((jjalbState.totalTasu + curTasu) / minutes) : 0;
+    // totalTasu는 입력 중인 현재 단어의 타수도 실시간으로 이미 반영하고 있으므로 따로 더하지 않는다.
+    const cpm = minutes > 0 ? Math.round(jjalbState.totalTasu / minutes) : 0;
     document.getElementById('jjalb-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
@@ -2665,6 +2684,7 @@
     jjalbState.totalChars = 0;
     jjalbState.totalTasu = 0;
     jjalbState.totalCorrect = 0;
+    jjalbState.prevInputLen = 0;
     if(jjalbState.timerId) clearInterval(jjalbState.timerId);
     document.getElementById('jjalb-title').textContent = cat.emoji + ' ' + cat.title;
     jjalbInput.value = '';
@@ -2704,6 +2724,13 @@
       jjalbState.startTime = Date.now();
       jjalbState.timerId = setInterval(tickJjalbStats, 250);
     }
+    const typed = jjalbInput.value;
+    // 오타를 내고 지웠다가 다시 입력하는 것도 실제로 손가락을 움직인 타수이므로,
+    // 입력창에 새로 늘어난 글자만큼 그때그때 타수를 누적한다 (지워도 이미 쌓인 타수는 그대로 유지).
+    if(typed.length > jjalbState.prevInputLen){
+      jjalbState.totalTasu += countTasu(typed.slice(jjalbState.prevInputLen));
+    }
+    jjalbState.prevInputLen = typed.length;
     renderCurrentJjalbRef();
   });
 
@@ -2719,10 +2746,10 @@
     let correctInLine = 0;
     for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
     jjalbState.totalChars += target.length;
-    jjalbState.totalTasu += countTasu(target);
     jjalbState.totalCorrect += correctInLine;
     jjalbState.lineIdx++;
     jjalbInput.value = '';
+    jjalbState.prevInputLen = 0;
     if(jjalbState.lineIdx >= jjalbState.lines.length){
       finishJjalb();
     } else {
@@ -2790,7 +2817,7 @@
   let geomjeongState = {
     name:'', totalSec:180, lines:[], lineIdx:0,
     startTime:0, endTime:0, timerId:null, finished:false,
-    totalChars:0, totalTasu:0, totalCorrect:0
+    totalChars:0, totalTasu:0, totalCorrect:0, prevInputLen:0
   };
 
   const geomjeongInput = document.createElement('input');
@@ -2889,8 +2916,8 @@
     const m = Math.floor(sec/60), s = sec%60;
     document.getElementById('geomjeong-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const elapsedMin = (now - geomjeongState.startTime)/60000;
-    const curTasu = countTasu(geomjeongInput.value);
-    const cpm = elapsedMin > 0 ? Math.round((geomjeongState.totalTasu + curTasu)/elapsedMin) : 0;
+    // totalTasu는 입력 중인 현재 줄의 타수도 실시간으로 이미 반영하고 있으므로 따로 더하지 않는다.
+    const cpm = elapsedMin > 0 ? Math.round(geomjeongState.totalTasu/elapsedMin) : 0;
     document.getElementById('geomjeong-speed').textContent = '⌨️ ' + cpm + '타/분';
   }
 
@@ -2933,6 +2960,7 @@
     geomjeongState.totalChars = 0;
     geomjeongState.totalTasu = 0;
     geomjeongState.totalCorrect = 0;
+    geomjeongState.prevInputLen = 0;
     if(geomjeongState.timerId) clearInterval(geomjeongState.timerId);
     geomjeongInput.value = '';
     geomjeongInput.disabled = false;
@@ -3024,16 +3052,22 @@
     }
     const typed = geomjeongInput.value;
     const target = currentGeomjeongLine();
+    // 오타를 내고 지웠다가 다시 입력하는 것도 실제로 손가락을 움직인 타수이므로,
+    // 입력창에 새로 늘어난 글자만큼 그때그때 타수를 누적한다 (지워도 이미 쌓인 타수는 그대로 유지).
+    if(typed.length > geomjeongState.prevInputLen){
+      geomjeongState.totalTasu += countTasu(typed.slice(geomjeongState.prevInputLen));
+    }
+    geomjeongState.prevInputLen = typed.length;
     renderCurrentGeomjeongRef();
 
     if(typed.length >= target.length){
       let correctInLine = 0;
       for(let i=0;i<target.length;i++){ if(typed[i]===target[i]) correctInLine++; }
       geomjeongState.totalChars += target.length;
-      geomjeongState.totalTasu += countTasu(target);
       geomjeongState.totalCorrect += correctInLine;
       geomjeongState.lineIdx++;
       geomjeongInput.value = '';
+      geomjeongState.prevInputLen = 0;
       ensureGeomjeongLines();
       positionGeomjeongInput();
       geomjeongInput.focus();

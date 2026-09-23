@@ -3026,6 +3026,18 @@
     ref.innerHTML = html;
   }
 
+  // 한컴타자/블루소프트 같은 시판 프로그램과 실제로 비교해보니, 우리 타자검정은 초성+중성+종성을
+  // 정확히 세는데도 같은 학생이 다른 프로그램보다 꾸준히 40~50% 정도 낮게 나온다는 제보를 받았다
+  // (예: 170->100, 80->40, 250->150). 원인은 타자검정 문장이 시판 프로그램의 짧고 쉬운 연습 문구와
+  // 달리 K팝 가사 등 길고 낯선 문장이라, 매 문장마다 "읽는 시간"이 타이핑 시간과 함께 5분 안에
+  // 그대로 섞여 들어가기 때문으로 보인다(글자를 느리게 쳐서가 아니라 문장을 읽는 시간 때문에
+  // 분모인 "경과 시간"이 실제 순수 타이핑 시간보다 커지는 구조). 문장을 다시 다 쓰는 대신,
+  // 학생들이 익숙한 다른 프로그램의 체감 속도와 맞도록 최종 분당타수에 보정값을 곱해준다.
+  const GEOMJEONG_SPEED_CALIBRATION = 1.8;
+  function calibrateGeomjeongCpm(rawCpm){
+    return Math.round(rawCpm * GEOMJEONG_SPEED_CALIBRATION);
+  }
+
   function tickGeomjeongStats(){
     if(!geomjeongState.startTime || geomjeongState.finished) return;
     const now = Date.now();
@@ -3040,8 +3052,8 @@
     document.getElementById('geomjeong-timer').textContent = '⏱️ ' + m + ':' + String(s).padStart(2,'0');
     const elapsedMin = (now - geomjeongState.startTime)/60000;
     // totalTasu는 입력 중인 현재 줄의 타수도 실시간으로 이미 반영하고 있으므로 따로 더하지 않는다.
-    const cpm = elapsedMin > 0 ? Math.round(geomjeongState.totalTasu/elapsedMin) : 0;
-    document.getElementById('geomjeong-speed').textContent = '⌨️ ' + cpm + '타/분';
+    const rawCpm = elapsedMin > 0 ? geomjeongState.totalTasu/elapsedMin : 0;
+    document.getElementById('geomjeong-speed').textContent = '⌨️ ' + calibrateGeomjeongCpm(rawCpm) + '타/분';
   }
 
   // 분당 타수(CPM)와 정확도를 기준으로 급수를 매긴다.
@@ -3057,14 +3069,16 @@
   ];
   function calcGeomjeongGrade(cpm, accuracy){
     // 분당 타수 계산 방식을 "글자 수" 대신 실제 "타수"(초성+중성+종성)로 바꾸면서
-    // 값이 약 2배 정도 커지므로, 급수 기준선도 그에 맞춰 2배로 올렸다.
+    // 값이 약 2배 정도 커져서 급수 기준선도 2배로 올렸었고, 이후 GEOMJEONG_SPEED_CALIBRATION(1.8배)
+    // 보정을 추가로 도입하면서 여기 기준선도 같은 비율로 다시 올려서, 같은 실력이면 예전과 비슷한
+    // 급수가 나오도록(보정 전후로 급수 난이도 자체는 바뀌지 않도록) 맞췄다.
     let level;
-    if(cpm >= 600) level = 6;
-    else if(cpm >= 500) level = 5;
-    else if(cpm >= 400) level = 4;
-    else if(cpm >= 300) level = 3;
-    else if(cpm >= 200) level = 2;
-    else if(cpm >= 100) level = 1;
+    if(cpm >= 1080) level = 6;
+    else if(cpm >= 900) level = 5;
+    else if(cpm >= 720) level = 4;
+    else if(cpm >= 540) level = 3;
+    else if(cpm >= 360) level = 2;
+    else if(cpm >= 180) level = 1;
     else level = 0;
     if(accuracy < 80) level = Math.max(0, level - 2);
     else if(accuracy < 90) level = Math.max(0, level - 1);
@@ -3102,7 +3116,7 @@
     geomjeongInput.disabled = true;
     const elapsedSec = geomjeongState.startTime ? Math.max(1,(Date.now()-geomjeongState.startTime)/1000) : geomjeongState.totalSec;
     const accuracy = geomjeongState.totalChars > 0 ? Math.round(geomjeongState.totalCorrect/geomjeongState.totalChars*100) : 100;
-    const cpm = Math.round(geomjeongState.totalTasu / (elapsedSec/60));
+    const cpm = calibrateGeomjeongCpm(geomjeongState.totalTasu / (elapsedSec/60));
     const gradeInfo = calcGeomjeongGrade(cpm, accuracy);
 
     document.getElementById('geomjeong-cert-name').textContent = geomjeongState.name ? (geomjeongState.name + ' 님의 타자검정 결과') : '나의 타자검정 결과';
